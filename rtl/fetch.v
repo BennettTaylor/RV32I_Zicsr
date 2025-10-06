@@ -10,7 +10,7 @@ module decode(
 
     // Output registers
     output reg [6:0] o_opcode, // Opcode
-    output reg [4:0] o_rd, // Destination register
+    output reg [4:0] o_rd_addr, // Destination register address
     output reg [31:0] o_imm, // Immediate value
     output reg [6:0] o_funct7, // Funct7
     output reg [2:0] o_funct3, // Funct3
