@@ -2,7 +2,7 @@
 
 set argv0 [lindex $argv 0]
 set proj_name "RV32I_Zicsr"
-set proj_dir  "../project"
+set proj_dir  "./project"
 
 create_project $proj_name $proj_dir -part xc7a100tcsg324-1 -force
 
@@ -19,12 +19,12 @@ if {[string equal $argv0 "clean"] && [file exists $proj_dir]} {
 }
 
 # Add sources
-add_files -fileset sources_1 [glob ../src/rtl/*.v]
-add_files -fileset sim_1 [glob ../src/sim/*.v]
-add_files -scan_for_includes [glob ../src/include/*.vh]
+add_files -fileset sources_1 [ glob ./src/rtl/*.v ]
+add_files -fileset sim_1 [ glob ./src/sim/*.v ]
+add_files -scan_for_includes [ glob ./src/include/*.vh ]
 
 # Add constraints
-add_files -fileset constrs_1 [glob ../constraints/*.xdc]
+add_files -fileset constrs_1 [ glob ./constraints/*.xdc ]
 
 # Set top module
 set_property top top [current_fileset]
