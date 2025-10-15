@@ -1,0 +1,18 @@
+# Vivado project build directories
+*.jou
+*.log
+*.str
+*.rpt
+*.runs/
+*.cache/
+*.hw/
+*.ip_user_files/
+*.sim/
+*.xpr
+*.data/
+*.srcs/
+*.gen/
+
+# Project-specific generated outputs
+project/*
+!project/.gitignore
