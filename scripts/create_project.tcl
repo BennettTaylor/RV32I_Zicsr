@@ -32,8 +32,5 @@ set_property top top [current_fileset]
 # Set simulation top
 set_property top tb_top [get_filesets sim_1]
 
-# Save project
-save_project_as $proj_name $proj_dir/$proj_name.xpr
-
 # Launch GUI
 start_gui
