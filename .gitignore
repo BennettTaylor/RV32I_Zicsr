@@ -16,3 +16,6 @@
 # Project-specific generated outputs
 project/*
 !project/.gitignore
+
+# Other
+.DS_Store
