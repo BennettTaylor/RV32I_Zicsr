@@ -21,11 +21,11 @@ This set of instructions is the smallest set capable of working as a general pro
 
 ## Development
 We are targeting the Xilinx Artix A7 FPGA development board for our implementation, so we have chosen to do development using Xilinx Vivado. To integrate with git control we use a TCL script & make to recreate the project from the source files found in this repository. To create the project run:  
-`make create`
+`make create`  
 You can also clean up the project before recreating by running:  
-`make clean`
+`make clean`  
 Additionally for setting up vivado for the lab machines, use:  
-`source /ad/eng/opt/Xilinx/Vivado/2020.2/settings64.sh`
+`source /ad/eng/opt/Xilinx/Vivado/2020.2/settings64.sh`  
 
 ## Architecture
 Our project utilizes a classic 5 stage pipeline.
