@@ -5,6 +5,7 @@
 `define XADDR 5 // Register address length
 `define ILEN 32 // Instruction length
 `define IALIGN 32 // Instruction alignment required
+`define REGISTERS 32 // Number of registers in the register file
 `define OPLEN 7 // Opcode length
 `define OPS 10 // Number of unique opcodes
 `define ALUOPS 14 // Number of unique ALU operations 
