@@ -2,8 +2,8 @@
 `include "header.vh"
 
 module csr(
-    // System Inputs
-    input wire i_clk, // System clock
+    /* CSR module inputs */
+    input wire i_clk, // CPU clock
     input wire i_rst_n // Active low reset
 
 );

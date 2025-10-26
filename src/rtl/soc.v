@@ -2,7 +2,7 @@
 `include "header.vh"
 
 module soc(
-    // System Inputs
+    /* System inputs */
     input wire i_clk, // System clock
     input wire i_rst_n // Active low reset
 

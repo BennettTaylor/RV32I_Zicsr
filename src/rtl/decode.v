@@ -2,60 +2,174 @@
 `include "header.vh"
 
 module decode(
-    // Inputs
-    input wire i_clk, // System clock
+    /* Decode stage inputs */
+    input wire i_clk, // CPU clock
     input wire i_rst_n, // Active low reset
     input wire [`XLEN-1:0] i_inst, // Instruction from instruction memory
     input wire [`XLEN-1:0] i_pc, // Current program counter
+    input wire [`XADDR-1:0] i_rd_addr, // register address for  
+    input wire [`XLEN-1:0] i_rd_data, // Data to be writen to register file
+    input wire i_wr_en, // Write enable for the register file
 
-    // Output registers
+    /* Decode stage output registers */
     output reg [`OPLEN:0] or_opcode, // Opcode
     output reg [`XADDR-1:0] or_rd_addr, // Destination register address
     output reg [`XADDR-1:0] or_rs1_addr, // Source register 1 address for forwarding
     output reg [`XADDR-1:0] or_rs2_addr, // Source register 2 address for forwarding
+    output reg [`XLEN-1:0] or_rs1_data, // Source register 1 value
+    output reg [`XLEN-1:0] or_rs2_data, // Source register 2 value
     output reg [`XLEN-1:0] or_imm, // Immediate value
+    output reg [4:0] or_shamt, // Shamt
     output reg [6:0] or_funct7, // Funct7
     output reg [2:0] or_funct3, // Funct3
-    output reg [`ALUOPS-1:0] or_alu_ops, // The ALU operation specified
-    output reg [`XLEN-1:0] or_pc, // Current program counter
-
-    //Output wires
-    output wire [`XADDR-1:0] ow_rs1_addr, // Source register 1 address for register file
-    output wire [`XADDR-1:0] ow_rs2_addr // Source register 2 address for register file
+    output reg [`ALUOPS-1:0] or_alu_op, // The ALU operation specified
+    output reg [`XLEN-1:0] or_pc // Current program counter
 );
 
 
 
-/* Assign rs1 and rs2 wires for register file */
-assign ow_rs1_addr = i_inst[19:15];
-assign ow_rs2_addr = i_inst[24:20];
+/* Assign rs1 and rs2 address wires for register file */
+wire [`XADDR-1:0] rs1_addr = i_inst[19:15];
+wire [`XADDR-1:0] rs2_addr = i_inst[24:20];
 
-/* Generate opcode & funct3 wire */
+/* Generate opcode & funct wires */
 wire [`OPLEN-1:0] opcode = i_inst[`OPLEN-1:0]; 
 wire [2:0] funct3 = i_inst[14:12];
+wire [6:0] funct7 = i_inst[31:25];
+
+/* Wires for register file */
+wire [`XLEN-1:0] rs1_data; 
+wire [`XLEN-1:0] rs2_data; 
 
 /* Registers for storing calculated values */
 reg [`XLEN-1:0] imm;
-reg [`ALUOPS-1:0] alu_ops;
+reg [`ALUOPS-1:0] alu_op;
+reg [4:0] shamt;
+
+/* Instantiate register file */
+register_file registers(
+    .i_clk(i_clk),
+    .i_rst_n(i_rst_n),
+    .i_wr_en(i_wr_en),
+    .i_rs1_addr(rs1_addr),
+    .i_rs2_addr(rs2_addr),
+    .i_rd_addr(i_rd_addr),
+    .i_rd_data(i_rd_data),
+    .or_rs1_data(rs1_data),
+    .or_rs2_data(rs2_data)
+);
 
 /* Assign register outputs */
 always @(posedge i_clk) begin
-    or_opcode <= opcode;
-    or_rd_addr <= i_inst[11:7];
-    or_rs1_addr <= ow_rs1_addr;
-    or_rs2_addr <= ow_rs2_addr;
-    or_imm <= imm;
-    or_funct7 <= i_inst[31:25];
-    or_funct3 <= funct3;
-    or_alu_ops <= alu_ops;
-    or_pc <= i_pc;
+    if (!i_rst_n) begin
+        or_opcode <= 0;
+        or_rd_addr <= 0;
+        or_rs1_addr <= 0;
+        or_rs2_addr <= 0;
+        or_rs1_data <= 0;
+        or_rs2_data <= 0;
+        or_imm <= 0;
+        or_funct7 <= 0;
+        or_funct3 <= 0;
+        or_funct7 <= 0; 
+        or_alu_op <= 0;
+        or_pc <= 0;
+    end else begin
+        or_opcode <= opcode;
+        or_rd_addr <= i_inst[11:7];
+        or_rs1_addr <= rs1_addr;
+        or_rs2_addr <= rs2_addr;
+        or_rs1_data <= rs1_data;
+        or_rs2_data <= rs2_data;
+        or_imm <= imm;
+        or_shamt <= shamt;
+        or_funct7 <= i_inst[31:25];
+        or_funct3 <= funct3;
+        or_funct7 <= funct7; 
+        or_alu_op <= alu_op;
+        or_pc <= i_pc;
+    end 
 end
 
 /* Calculate needed values */
 always @(*) begin
     /* Reset registers */
-    alu_ops = 0;
+    alu_op = 0;
     imm = 0;
+    shamt = 0;
+    case(opcode)
+        `LUI_OP, `AUIPC_OP: begin
+            /* Immediate encoding for U-Type instruction */
+            imm[31:12] = i_inst[31:12]; 
+            imm[11:0] = 12'b000000000000;
+        end 
+        
+        `JAL_OP: begin
+            /* Immediate encoding for JAL instruction */
+            imm[31:20] = i_inst[31];
+            imm[19:12] = i_inst[19:12];
+            imm[11] = i_inst[20];
+            imm[10:1] = i_inst[30:21]; 
+            imm[0] = 1'b0;     
+        end
+        
+        `I_OP, `L_OP, `JALR_OP: begin
+        // Case Statement for I-Type
+            imm[31:12] = i_inst[31];
+            imm[11:0] = i_inst[30:10];
+            shamt = i_inst[24:20]; 
+        end
+        
+        `S_OP: begin
+        // Case Statement for S-Type
+            imm[31:12] = i_inst[31];
+            imm[11:5] = i_inst[31:25];
+            imm[4:0] = i_inst[11:7];
+        end 
+        
+        `B_OP: begin
+        // Case Statement for B-Type
+            imm[31:12] = i_inst[31];
+            imm[11] = i_inst[7]; 
+            imm[10:5] = i_inst[30:25]; 
+            imm[4:1] = i_inst[11:8]; 
+            imm[0] = 1'b0;
+            
+            case(funct3)
+                3'b000: alu_op[`EQ] = 1'b1;
+                3'b001: alu_op[`NEQ] = 1'b1;
+                3'b100: alu_op[`SLT] = 1'b1;
+                3'b101: alu_op[`GE] = 1'b1;
+                3'b110: alu_op[`SLTU] = 1'b1;
+                3'b111: alu_op[`GEU] = 1'b1; 
+            endcase
+        end
+        
+        `R_OP: begin
+            case(funct3)
+                3'b000: begin
+                    if (funct7 == 7'b0010100) begin
+                        alu_op[`SUB] = 1'b1;
+                    end else begin
+                        alu_op[`ADD] = 1'b1;
+                    end
+                end
+                3'b100: alu_op[`XOR] = 1'b1;
+                3'b110: alu_op[`OR] = 1'b1;
+                3'b001: alu_op[`SLL] = 1'b1;
+                3'b101: begin
+                    if (funct7 == 7'b0010100) begin //SRA (Shift Right Arithmetic)
+                        alu_op[`SRA] = 1'b1;
+                    end else begin
+                        alu_op[`SRL] = 1'b1;
+                    end
+                end
+                3'b111: alu_op[`AND] = 1'b1;
+                3'b010: alu_op[`SLT] = 1'b1;
+                3'b011: alu_op[`SLTU] = 1'b1;
+            endcase
+        end
+    endcase
 end
 
 endmodule;

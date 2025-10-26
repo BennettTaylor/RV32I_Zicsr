@@ -1,15 +1,15 @@
 `timescale 1ns / 1ps
 `include "header.vh"
 
-module fetch_tb;
-    /* Fetch stage inputs */
+module memory_tb;
+    /* Memory stage inputs */
     reg i_clk; // CPU clock
     reg i_rst_n; // Active low reset
 
-    /* Fetch stage outputs */
+    /* Memory stage outputs */
     
-    /* Instantiate the fetch stage */
-    fetch fetch_test(
+    /* Instantiate the memory stage */
+    memory memory_test(
         .i_clk(i_clk),
         .i_rst_n(i_rst_n)
     );

@@ -1,0 +1,38 @@
+`timescale 1ns / 1ps
+`include "header.vh"
+
+module decode_tb;
+    /* Inputs */
+    reg i_clk; // System clock
+    reg i_rst_n; // Active low reset
+
+    /* Outputs */
+    
+    /* Instantiate the decode stage */
+    decode decode_test(
+        .i_clk(i_clk),
+        .i_rst_n(i_rst_n)
+    );
+    
+    /* Tests */
+    initial begin
+        /* Initialize inputs */
+        i_clk = 0;
+        i_rst_n = 0;
+        
+        /* Stop reset signal */
+        #10;
+        i_rst_n = 1;
+        
+        /* Begin Tests */
+        #10;
+        
+    end
+    
+    /* Drive clock */
+    always begin
+        #5;
+        i_clk = ~i_clk;
+    end
+
+endmodule

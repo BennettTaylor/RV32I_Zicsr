@@ -2,8 +2,8 @@
 `include "header.vh"
 
 module forward(
-    // System Inputs
-    input wire i_clk, // System clock
+    /* Forwarding unit inputs */
+    input wire i_clk, // CPU clock
     input wire i_rst_n // Active low reset
 
 );

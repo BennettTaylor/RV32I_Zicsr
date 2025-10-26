@@ -2,14 +2,14 @@
 `include "header.vh"
 
 module alu(
-    // Inputs
-    input wire i_clk, // System clock
+    /* ALU inputs */
+    input wire i_clk, // CPU clock
     input wire i_rst_n, // Active low resetcounter
     input wire [`ALUOPS-1:0] i_alu_op, // ALU operation to perform
     input wire signed [`XLEN-1:0] i_data_1, // First input data to operate upon (usually rs1)
     input wire signed [`XLEN-1:0] i_data_2, // Second input data to operate upon (usually rs2 or immediate)
 
-    //Output registers
+    /* ALU output registers */
     output reg [`XLEN-1:0] ow_result // ALU result
 );
 
