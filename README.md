@@ -20,10 +20,12 @@ This processor is follows the RV32I_Zicsr specification, which means that it imp
 This set of instructions is the smallest set capable of working as a general processor, many common assembly instructions are missing like multiplication, division, and floating point operations. Despite this, all other missing operations can be accomplished by this limited set (although slowly). Multiplication for example can be accomplished through repeated addition.
 
 ## Development
-We are targeting the Xilinx Artix A7 FPGA development board for our implementation, so we have chosen to do development using Xilinx Vivado. To integrate with git control we use a TCL script & make to recreate the project from the source files found in this repository. To create the project run:
+We are targeting the Xilinx Artix A7 FPGA development board for our implementation, so we have chosen to do development using Xilinx Vivado. To integrate with git control we use a TCL script & make to recreate the project from the source files found in this repository. To create the project run:  
 `make create`
-You can also clean up the project before recreating by running:
+You can also clean up the project before recreating by running:  
 `make clean`
+Additionally for setting up vivado for the lab machines, use:  
+`source /ad/eng/opt/Xilinx/Vivado/2020.2/settings64.sh`
 
 ## Architecture
 Our project utilizes a classic 5 stage pipeline.
