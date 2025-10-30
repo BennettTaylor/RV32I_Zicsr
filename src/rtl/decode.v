@@ -19,7 +19,6 @@ module decode(
     output reg [`XLEN-1:0] or_rs1_data, // Source register 1 value
     output reg [`XLEN-1:0] or_rs2_data, // Source register 2 value
     output reg [`XLEN-1:0] or_imm, // Immediate value
-    output reg [4:0] or_shamt, // Shamt
     output reg [6:0] or_funct7, // Funct7
     output reg [2:0] or_funct3, // Funct3
     output reg [`ALUOPS-1:0] or_alu_op, // The ALU operation specified
@@ -82,7 +81,6 @@ always @(posedge i_clk) begin
         or_rs1_data <= rs1_data;
         or_rs2_data <= rs2_data;
         or_imm <= imm;
-        or_shamt <= shamt;
         or_funct7 <= i_inst[31:25];
         or_funct3 <= funct3;
         or_funct7 <= funct7; 
@@ -116,8 +114,7 @@ always @(*) begin
         `I_OP, `L_OP, `JALR_OP: begin
         // Case Statement for I-Type
             imm[31:12] = i_inst[31];
-            imm[11:0] = i_inst[30:10];
-            shamt = i_inst[24:20]; 
+            imm[11:0] = i_inst[31:20];
         end
         
         `S_OP: begin

@@ -8,6 +8,7 @@ module alu(
     input wire [`ALUOPS-1:0] i_alu_op, // ALU operation to perform
     input wire signed [`XLEN-1:0] i_data_1, // First input data to operate upon (usually rs1)
     input wire signed [`XLEN-1:0] i_data_2, // Second input data to operate upon (usually rs2 or immediate)
+    input wire [4:0] shamt, // Shamt for shift operations
 
     /* ALU output registers */
     output reg [`XLEN-1:0] ow_result // ALU result
