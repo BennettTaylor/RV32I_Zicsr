@@ -100,6 +100,7 @@ always @(*) begin
             /* Immediate encoding for U-Type instruction */
             imm[31:12] = i_inst[31:12]; 
             imm[11:0] = 12'b000000000000;
+            alu_op = `ADD;
         end 
         
         `JAL_OP: begin
@@ -108,13 +109,15 @@ always @(*) begin
             imm[19:12] = i_inst[19:12];
             imm[11] = i_inst[20];
             imm[10:1] = i_inst[30:21]; 
-            imm[0] = 1'b0;     
+            imm[0] = 1'b0;
+            alu_op = `ADD;
         end
         
-        `I_OP, `L_OP, `JALR_OP: begin
+        `L_OP, `JALR_OP: begin
         // Case Statement for I-Type
             imm[31:12] = i_inst[31];
             imm[11:0] = i_inst[31:20];
+            alu_op = `ADD;
         end
         
         `S_OP: begin
@@ -133,37 +136,39 @@ always @(*) begin
             imm[0] = 1'b0;
             
             case(funct3)
-                3'b000: alu_op[`EQ] = 1'b1;
-                3'b001: alu_op[`NEQ] = 1'b1;
-                3'b100: alu_op[`SLT] = 1'b1;
-                3'b101: alu_op[`GE] = 1'b1;
-                3'b110: alu_op[`SLTU] = 1'b1;
-                3'b111: alu_op[`GEU] = 1'b1; 
+                3'b000: alu_op = `EQ;
+                3'b001: alu_op = `NEQ;
+                3'b100: alu_op = `SLT;
+                3'b101: alu_op = `GE;
+                3'b110: alu_op = `SLTU;
+                3'b111: alu_op = `GEU;
             endcase
         end
         
-        `R_OP: begin
+        `R_OP, `I_OP: begin
+            imm[31:12] = i_inst[31];
+            imm[11:0] = i_inst[31:20];
             case(funct3)
                 3'b000: begin
-                    if (funct7 == 7'b0010100) begin
-                        alu_op[`SUB] = 1'b1;
+                    if ((funct7 == 7'b0010100) && (opcode != `I_OP)) begin
+                        alu_op = `SUB;
                     end else begin
-                        alu_op[`ADD] = 1'b1;
+                        alu_op = `ADD;
                     end
                 end
-                3'b100: alu_op[`XOR] = 1'b1;
-                3'b110: alu_op[`OR] = 1'b1;
-                3'b001: alu_op[`SLL] = 1'b1;
+                3'b100: alu_op = `XOR;
+                3'b110: alu_op = `OR;
+                3'b001: alu_op = `SLL;
                 3'b101: begin
                     if (funct7 == 7'b0010100) begin //SRA (Shift Right Arithmetic)
-                        alu_op[`SRA] = 1'b1;
+                        alu_op = `SRA;
                     end else begin
-                        alu_op[`SRL] = 1'b1;
+                        alu_op = `SRL;
                     end
                 end
-                3'b111: alu_op[`AND] = 1'b1;
-                3'b010: alu_op[`SLT] = 1'b1;
-                3'b011: alu_op[`SLTU] = 1'b1;
+                3'b111: alu_op = `AND;
+                3'b010: alu_op = `SLT;
+                3'b011: alu_op = `SLTU;
             endcase
         end
     endcase
