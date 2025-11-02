@@ -14,17 +14,17 @@ module alu(
     output reg [`XLEN-1:0] ow_result // ALU result
 );
 
-wire i_data_1_us = $unsigned(i_data_1);
-wire i_data_2_us = $unsigned(i_data_2);
+wire [`XLEN-1:0] i_data_1_us = $unsigned(i_data_1);
+wire [`XLEN-1:0] i_data_2_us = $unsigned(i_data_2);
 
 /* Perform ALU operation */
 always @(*) begin
     case(i_alu_op)
         `ADD: ow_result <= i_data_1 + i_data_2;
         `SUB: ow_result <= i_data_1 - i_data_2;
-        `SLL: ow_result <= i_data_1 << i_data_2;
-        `SLT: ow_result <= i_data_1 < i_data_2;
-        `SLTU: ow_result <= i_data_1_us < i_data_2_us;
+        `SLL: ow_result <= i_data_1 << i_data_2[4:0];
+        `SLT: ow_result <= i_data_1 < i_data_2[4:0];
+        `SLTU: ow_result <= i_data_1_us < i_data_2_us[4:0];
         `XOR: ow_result <= i_data_1 ^ i_data_2;
         `SRL: ow_result <= i_data_1 >> i_data_2;
         `SRA: ow_result <= i_data_1 >>> i_data_2;
@@ -34,7 +34,7 @@ always @(*) begin
         `NEQ: ow_result <= i_data_1 != i_data_2;
         `GE: ow_result <= i_data_1 >= i_data_2;
         `GEU: ow_result <= i_data_1_us >= i_data_2_us;
-    endcase;
+    endcase
 end
 
-endmodule;
+endmodule

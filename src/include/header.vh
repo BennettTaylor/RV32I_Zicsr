@@ -8,7 +8,7 @@
 `define REGISTERS 32 // Number of registers in the register file
 `define OPLEN 7 // Opcode length
 `define OPS 10 // Number of unique opcodes
-`define ALUOPS 14 // Number of unique ALU operations 
+`define ALUOPS 4 // Bit-Length ALU operations
 
 /* Opcodes */
 `define R_OP 7'b0110011 // R Type Opcode
@@ -37,3 +37,5 @@
 `define NEQ 11
 `define GE 12
 `define GEU 13
+
+
