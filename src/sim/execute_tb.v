@@ -8,7 +8,7 @@ module execute_tb;
     // -------------------------
     reg i_clk;
     reg i_rst_n;
-    reg [`OPLEN:0] i_opcode;
+    reg [`OPLEN-1:0] i_opcode;
     reg [`XADDR-1:0] i_rd_addr;
     reg [`XLEN-1:0] i_rd_mem;
     reg [`XADDR-1:0] i_rd_addr_mem;
@@ -29,7 +29,7 @@ module execute_tb;
     // -------------------------
     // Outputs
     // -------------------------
-    wire [`OPLEN:0] or_opcode;
+    wire [`OPLEN-1:0] or_opcode;
     wire [`XADDR-1:0] or_rd_addr;
     wire [`XLEN-1:0] or_alu_result;
     wire [`XLEN-1:0] or_pc;
@@ -123,7 +123,7 @@ module execute_tb;
         // 1. R-type ADD test
         // ----------------------------------------
         i_opcode = `R_OP;
-        i_alu_op = `ALU_ADD;
+        i_alu_op = `ADD;
         i_rs1_data = 32'd10;
         i_rs2_data = 32'd15;
         i_pc = 32'h00000000;
@@ -135,7 +135,7 @@ module execute_tb;
         // 2. I-type ADDI test
         // ----------------------------------------
         i_opcode = `I_OP;
-        i_alu_op = `ALU_ADD;
+        i_alu_op = `ADD;
         i_rs1_data = 32'd5;
         i_imm = 32'd7;
         i_pc = 32'h00000004;
@@ -147,7 +147,7 @@ module execute_tb;
         // 3. LUI test
         // ----------------------------------------
         i_opcode = `LUI_OP;
-        i_alu_op = `ALU_PASS;
+        i_alu_op = `ADD;
         i_imm = 32'hABCD0000;
         i_pc = 32'h00000008;
         #10;
@@ -157,7 +157,7 @@ module execute_tb;
         // 4. Branch (BEQ) test with taken branch
         // ----------------------------------------
         i_opcode = `B_OP;
-        i_alu_op = `ALU_EQ;
+        i_alu_op = `EQ;
         i_rs1_data = 32'd4;
         i_rs2_data = 32'd4;
         i_imm = 32'd8; // branch offset
@@ -169,7 +169,7 @@ module execute_tb;
         // 5. JAL test
         // ----------------------------------------
         i_opcode = `JAL_OP;
-        i_alu_op = `ALU_ADD;
+        i_alu_op = `ADD;
         i_imm = 32'd100;
         i_pc = 32'h00000020;
         #10;
@@ -179,7 +179,7 @@ module execute_tb;
         // 6. AUIPC test
         // ----------------------------------------
         i_opcode = `AUIPC_OP;
-        i_alu_op = `ALU_ADD;
+        i_alu_op = `ADD;
         i_imm = 32'd40;
         i_pc = 32'h00000040;
         #10;
@@ -189,7 +189,7 @@ module execute_tb;
         // 7. Forwarding test (from MEM stage)
         // ----------------------------------------
         i_opcode = `R_OP;
-        i_alu_op = `ALU_ADD;
+        i_alu_op = `ADD;
         i_rs1_addr = 5'd1;
         i_rs2_addr = 5'd2;
         i_rd_addr_mem = 5'd1;
