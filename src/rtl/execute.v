@@ -28,7 +28,8 @@ module execute(
     output reg [`XADDR-1:0] or_rd_addr, // Destination register address
     output reg [`XLEN-1:0] or_alu_result,
     output reg [`XLEN-1:0] or_pc, // Current program counter
-    output reg [`XLEN-1:0] or_pc_next // Next program counter for jumps
+    output reg [`XLEN-1:0] or_pc_next, // Next program counter for jumps
+    output reg or_pc_jump
 );
 
 /* Forwarding unit wires */
@@ -37,8 +38,6 @@ wire [`XLEN-1:0] rs2_data;
 
 /* Instantiate the forwarding unit */
 forward forwarding_unit(
-    .i_clk(i_clk),
-    .i_rst_n(i_rst_n),
     .i_rs1_ex(i_rs1_data),
     .i_rs2_ex(i_rs2_data),
     .i_rs1_addr_ex(i_rs1_addr),
@@ -60,8 +59,6 @@ reg [`XLEN-1:0] data_2;
 
 /* Instantiate the ALU */ 
 alu ALU(
-    .i_clk(i_clk),
-    .i_rst_n(i_rst_n),
     .i_alu_op(i_alu_op),
     .i_data_1(data_1),
     .i_data_2(data_2),
@@ -74,9 +71,11 @@ reg [`XLEN-1:0] pc_inc;
 /* Assign register outputs */
 always @(posedge i_clk) begin
     if ((i_opcode == `B_OP) && (alu_result == 1)) begin
-        pc_inc = i_imm;
+        or_pc_jump <= 1;
+        pc_inc <= i_imm;
     end else if ((i_opcode == `AUIPC_OP) || (i_opcode == `JAL_OP) || (i_opcode == `JALR_OP)) begin
-        pc_inc = alu_result;
+        or_pc_jump <= 1;
+        pc_inc <= alu_result;
     end
     if (!i_rst_n) begin
         or_opcode <= 0;
@@ -90,6 +89,7 @@ always @(posedge i_clk) begin
         or_alu_result <= alu_result;
         or_pc <= i_pc;
         or_pc_next <= i_pc + pc_inc;
+        
     end 
 
 end

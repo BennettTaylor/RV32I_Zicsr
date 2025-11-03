@@ -43,7 +43,6 @@ wire [`XLEN-1:0] rs2_data;
 /* Registers for storing calculated values */
 reg [`XLEN-1:0] imm;
 reg [`ALUOPS-1:0] alu_op;
-reg [4:0] shamt;
 
 /* Instantiate register file */
 register_file registers(
@@ -94,7 +93,6 @@ always @(*) begin
     /* Reset registers */
     alu_op = 0;
     imm = 0;
-    shamt = 0;
     case(opcode)
         `LUI_OP, `AUIPC_OP: begin
             /* Immediate encoding for U-Type instruction */

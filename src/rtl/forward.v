@@ -3,8 +3,6 @@
 
 module forward(
     /* Forwarding unit inputs */
-    input wire i_clk, // CPU clock
-    input wire i_rst_n, // Active low reset
     input wire [`XLEN-1:0] i_rs1_ex, // RS1 value for the instruction currently in the execution stage
     input wire [`XLEN-1:0] i_rs2_ex, // RS2 value for the instruction currently in the execution stage
     input wire [`XADDR-1:0] i_rs1_addr_ex, // Address of RS1 for the insturction currently in the execution stage
