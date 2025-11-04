@@ -4,7 +4,7 @@ An open-source RISC-V base 32 integer core capable of running FreeRTOS, written 
 ## The Specification
 This processor is follows the RV32I_Zicsr specification, which means that it implements the 32 bit base integer RISC-V ISA with the Zicsr extension. The Zicsr extension is necessary for actually implementing the CPU in hardware, as it adds the features needed for atomic operations on 4096 control and status registers. This is required to interface with hardware and store important information like trap handler addresses. This allows our processor to interface with I/O, interupts, run operating systems, etc. In total there are 45 instructions implemented:
 
-| I-Type  | R-Type  | S-Type  | B-Type  | J-Type  | U-Type  | Load  |  Control |
+| I-Type  | R-Type  | S-Type  | B-Type  | J-Type  | U-Type  | Load  |  System |
 |---|---|---|---|---|---|---|---|
 | addi  | add  | sb  | beq  | jal  | lui  | lb  | ecall  |
 | slti  | sub  | sh  | bne  | jalr  | auipc  | lh  | ebreak  |
