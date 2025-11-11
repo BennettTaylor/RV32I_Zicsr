@@ -13,4 +13,4 @@ update:
 # Delete everything except .gitignore
 clean:
 	find $(PROJECT_DIR) -mindepth 1 ! -name ".gitignore" -exec rm -rf {} +
-	rm *.jou *.log
+	rm *.jou *.log *.str
