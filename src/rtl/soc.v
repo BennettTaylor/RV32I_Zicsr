@@ -8,4 +8,4 @@ module soc(
 
 );
 
-endmodule;
+endmodule

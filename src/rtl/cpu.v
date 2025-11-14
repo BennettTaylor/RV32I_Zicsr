@@ -8,4 +8,4 @@ module cpu(
 
 );
 
-endmodule;
+endmodule

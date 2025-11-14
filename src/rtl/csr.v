@@ -8,4 +8,4 @@ module csr(
 
 );
 
-endmodule;
+endmodule

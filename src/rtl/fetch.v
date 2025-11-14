@@ -23,4 +23,4 @@ always @(posedge i_clk) begin
 
 end
 
-endmodule;
+endmodule
