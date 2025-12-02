@@ -4,12 +4,9 @@
 module cpu(
     /* CPU inputs */
     input wire i_clk, // CPU clock
-    input wire i_rst_n // Active low reset
+    input wire i_rst_n,// Active low reset
 
     /*This is from angeloJacobs, the rest is from ours */
-
-    module rv32i_core #(parameter PC_RESET = 32'h00_00_00_00, TRAP_ADDRESS = 0, ZICSR_EXTENSION = 1) ( 
-    input wire i_clk, i_rst_n,
     //Instruction Memory Interface (32 bit rom)
     input wire[31:0] i_inst, //32-bit instruction
     output wire[31:0] o_iaddr, //address of instruction 
@@ -31,81 +28,57 @@ module cpu(
     input wire i_timer_interrupt //interrupt from timer
 );
 
-//Wires for base register
-wire[31:0] rs1_orig;
-wire[31:0] rs2_orig;
-wire[31:0] rs1;
-wire[31:0] rs2;
-
 //Wires for fetch
 wire[31:0] fetch_pc;
 wire[31:0] fetch_inst;
 
 //Wires for decode
-wire[`ALU_WIDTH-1:0] decoder_alu;
-wire[`OPCODE_WIDTH-1:0] decoder_opcode;
+wire[`Oplen-1:0] decoder_opcode;
 wire[31:0] decoder_pc;
 wire[4:0] decoder_rs1_addr, decoder_rs2_addr;
 wire[4:0] decoder_rs1_addr_q, decoder_rs2_addr_q;
 wire[4:0] decoder_rd_addr; 
 wire[31:0] decoder_imm; 
 wire[2:0] decoder_funct3;
-wire[`EXCEPTION_WIDTH-1:0] decoder_exception;
 wire decoder_ce;
 wire decoder_flush;
+
 //Wires for alu
-wire[31:0] alu_y; // Result of alu_op
-wire[`Oplen-1:0] alu_opcode;
-wire[4:0] alu_rs1_addr;
-wire[31:0] alu_rs1;
-wire[31:0] alu_rs2;
-wire[11:0] alu_imm;
-wire[2:0] alu_funct3;
-wire[31:0] alu_pc;
-wire[31:0] alu_next_pc;
-wire alu_change_pc;
-wire alu_wr_rd;
-wire[4:0] alu_rd_addr;
-wire[31:0] alu_rd;
+wire [31:0] alu_or_rs1; //Source register 1 value
+wire [31:0] alu_or_rs2; //Source register 2 value
+wire [11:0] alu_or_imm; //Immediate value
+wire [2:0] alu_or_funct3; // function type
+wire [4:0] alu_r_rs1_addr; //address for register source 1
+wire [6:0] alu_or_opcode; //opcode type 
+wire [`XLEN-1:0] alu_ow_result;// ALU result
 
 //Wires for mem access
+wire memory_or_pc; // Current program counter
+wire memory_or_rd_addr; // Register to be writen to
+wire memory_r_rd_write; // Write enable for rd
+wire memory_or_rd_data; // Data to be written to rd
+wire memory_or_opcode; // Opcode
+wire memory_or_mem_req; // Memory request signal
+wire memory_or_mem_addr; // Memory address requested for read/write
+wire memory_or_mem_data; // Data to be written to memory
+wire emory_or_funct3; // Indicates what kind of memory operation is being performed
+wire memory_or_read_write; // Indicates read (0) or write (1) operation
+wire memory_or_flush; // Flush signal to external stages
+wire memory_or_stall; // Stall signal to external stages
+
 
 //Wires for writeback
-//wires for rv32i_writeback
+wire writeback_or_rd_addr; // Register to be writen to
+wire writeback_or_rd_write; // Write enable for rd
+wire writeback_or_rd_data; // Data to be written to rd
+wire writeback_or_stall;
+wire writeback_or_flush;
 wire writeback_wr_rd; 
-wire[4:0] writeback_rd_addr; 
-wire[31:0] writeback_rd;
-wire[31:0] writeback_next_pc;
-wire writeback_change_pc;
-wire writeback_ce;
-wire writeback_flush;
 
-forward operand_forward (//Forarding unit
-.i_rs1_ex(rs1_orig), //Rs1 in basereg
-.i_rs2_ex(rs2_orig), //Rs2 in basereg
-.i_rs1_addr_ex(decoder_rs1_addr_q), //Address or rs1 in execution
-.i_rs2_addr_ex(decoder_rs2_addr_q), //Address or rs2 in execution
-.o_rs1(rs1),
-.o_rs2(rs2),
+//wires for rv32i_writeback Placeholder 
 
-// Mem Access
-.i_rd_addr(alu_rd_addr), //Destination register address
-//ask questions on this and "stage 5"
 
-);
-
-register_file s0( // Base Register Creations
-.i_clk(clk),
-.i_rs1_addr(decoder_rs1_addr), //source register 1 address
-.i_rs2_addr(decoder_rs2_addr), //source register 2 address
-.i_rd_addr(writeback_rd_addr),
-.i_rd_data(writeback_rd),
-.i_wr_en(writeback_wr_rd), 
-.or_rs1_data(rs1_orig),
-.or_rs2_data(rs2_orig), 
-);
-
-fetch s1 ( // logic for fetching instruction [FETCH STAGE , STAGE 1]
+fetch s1( // logic for fetching instruction [FETCH STAGE , STAGE 1]
 .i_clk(i_clk),
 .i_rst_n(i_rst_n),
 .o_iaddr(o_iaddr), //Instruction address
@@ -136,7 +109,7 @@ decode s2( // Logic for decode
 .or_imm(decoder_imm), // Does this need to be a wire in decode??
 .or_funct7(decoder_funct3), //Function3 
 .or_opcode(decoder_opcode), //Opcode
-.or_alu_op(decoder_alu), //Alu 
+.or_alu_op(decoder_alu) //Alu 
 //Insert stalls here
 );
 
@@ -168,6 +141,6 @@ memory s4 (//Logic For memory
 
 );
 
-);
 
-endmodule
+
+endmodule;
