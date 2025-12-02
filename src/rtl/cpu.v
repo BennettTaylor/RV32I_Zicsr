@@ -138,6 +138,7 @@ alu s3(//Alu Logic
 
 memory s4 (//Logic For memory
 
+    
 
 );
 
