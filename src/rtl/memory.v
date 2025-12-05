@@ -33,6 +33,8 @@ module memory(
 );
 
 reg [`XLEN-1:0] rd_data;
+reg misaligned_addr;
+reg req_complete; // Request completion indicator
 
 always @(posedge i_clk or negedge i_rst_n) begin
     if (!i_rst_n) begin
@@ -80,25 +82,108 @@ always @(posedge i_clk or negedge i_rst_n) begin
         or_flush <= 0;
         or_stall <= 0;
     end
+    
+    req_complete = 0;
 end
 
 /* Generate memory request */
 always @(*) begin
-    if ((i_opcode == `L_OP) && !i_mem_ack) begin
+    misaligned_addr = 0;
+    if ((i_opcode == `L_OP) && !req_complete) begin
         /* Handle load operation */
-        or_mem_addr = {i_alu_result[31:2], 2'b00};
-        or_read_write = 0;
-        or_mem_req = 1;
-        or_stall = 1'b1;
-        or_funct3 = i_funct3;
-        
-    end else if ((i_opcode == `S_OP) && !i_mem_ack) begin
+        case (i_funct3)
+            /* Load byte */
+            3'b000: begin
+                or_mem_addr = i_alu_result;
+                or_read_write = 0;
+                or_mem_req = 1;
+                or_stall = 1'b1;
+                or_funct3 = i_funct3;
+            end
+            
+            /* Load half word */
+            3'b001: begin
+                if (i_alu_result[0] == 1) begin
+                    or_read_write = 0;
+                    or_mem_req = 0;
+                    or_stall = 1'b1;
+                    or_funct3 = i_funct3;
+                    misaligned_addr = 1;
+                end else begin
+                    or_mem_addr = i_alu_result;
+                    or_read_write = 0;
+                    or_mem_req = 1;
+                    or_stall = 1'b1;
+                    or_funct3 = i_funct3;
+                end
+            end
+            
+            /* Load word */
+            3'b010: begin
+                if (i_alu_result[1:0] != 2'b00) begin
+                    or_read_write = 0;
+                    or_mem_req = 0;
+                    or_stall = 1'b1;
+                    or_funct3 = i_funct3;
+                    misaligned_addr = 1;
+                end else begin
+                    or_mem_addr = i_alu_result;
+                    or_read_write = 0;
+                    or_mem_req = 1;
+                    or_stall = 1'b1;
+                    or_funct3 = i_funct3;
+                end
+            end
+        endcase
+    end else if ((i_opcode == `S_OP) && !req_complete) begin
         /* Handle store operation */
-        or_mem_addr = {i_alu_result[31:2], 2'b00};
-        or_read_write = 1;
-        or_mem_req = 1;
-        or_stall = 1'b1;
-        or_funct3 = i_funct3;
+        case (i_funct3)
+            /* Load byte */
+            3'b000: begin
+                or_mem_addr = i_alu_result;
+                or_mem_data = i_rs2;
+                or_read_write = 1;
+                or_mem_req = 1;
+                or_stall = 1'b1;
+                or_funct3 = i_funct3;
+            end
+            
+            /* Load half word */
+            3'b001: begin
+                if (i_alu_result[0] == 1) begin
+                    or_read_write = 1;
+                    or_mem_req = 0;
+                    or_stall = 1'b1;
+                    or_funct3 = i_funct3;
+                    misaligned_addr = 1;
+                end else begin
+                    or_mem_addr = i_alu_result;
+                    or_mem_data = i_rs2;
+                    or_read_write = 1;
+                    or_mem_req = 1;
+                    or_stall = 1'b1;
+                    or_funct3 = i_funct3;
+                end
+            end
+            
+            /* Load word */
+            3'b010: begin
+                if (i_alu_result[1:0] != 2'b00) begin
+                    or_read_write = 1;
+                    or_mem_req = 0;
+                    or_stall = 1'b1;
+                    or_funct3 = i_funct3;
+                    misaligned_addr = 1;
+                end else begin
+                    or_mem_addr = i_alu_result;
+                    or_mem_data = i_rs2;
+                    or_read_write = 1;
+                    or_mem_req = 1;
+                    or_stall = 1'b1;
+                    or_funct3 = i_funct3;
+                end
+            end
+        endcase
         
         /* Construct data to be stored to memory */
         case (i_funct3)
@@ -151,80 +236,7 @@ end
 always @(posedge i_mem_ack) begin
     if (i_opcode == `L_OP) begin
         /* Handle load operation */
-        case (i_funct3)
-            /* Load byte */
-            3'b000: begin
-                case (i_alu_result[1:0])
-                    2'b00: begin
-                        rd_data = {24 * i_mem_data[7], i_mem_data[7:0]}; 
-                    end
-                    
-                    2'b01: begin
-                        rd_data = {24 * i_mem_data[15], i_mem_data[15:8]};
-                    end
-                    
-                    2'b10: begin
-                        rd_data = {24 * i_mem_data[23], i_mem_data[23:16]};
-                    end
-                    
-                    2'b11: begin
-                        rd_data = {24 * i_mem_data[31], i_mem_data[31:24]};
-                    end
-                endcase
-            end
-            
-            /* Load half word */
-            3'b001: begin
-                case (i_alu_result[1])
-                    1'b0: begin
-                        rd_data = {16 * i_mem_data[15], i_mem_data[15:0]};
-                    end
-                    
-                    1'b1: begin
-                        rd_data = {16 * i_mem_data[31], i_mem_data[31:16]};
-                    end
-                endcase
-            end
-            
-            /* Load word */
-            3'b010: begin
-                rd_data = i_mem_data;
-            end
-            
-            /* Load byte unsigned */
-            3'b100: begin
-                case (i_alu_result[1:0])
-                    2'b00: begin
-                        rd_data = {24 * 0, i_mem_data[7:0]}; 
-                    end
-                    
-                    2'b01: begin
-                        rd_data = {24 * 0, i_mem_data[15:8]};
-                    end
-                    
-                    2'b10: begin
-                        rd_data = {24 * 0, i_mem_data[23:16]};
-                    end
-                    
-                    2'b11: begin
-                        rd_data = {24 * 0, i_mem_data[31:24]};
-                    end
-                endcase
-            end
-            
-            /* Load half word unsigned */
-            3'b101: begin
-                case (i_alu_result[1])
-                    1'b0: begin
-                        rd_data = {16 * 0, i_mem_data[15:0]};
-                    end
-                    
-                    1'b1: begin
-                        rd_data = {16 * 0, i_mem_data[31:16]};
-                    end
-                endcase
-            end
-        endcase
+        rd_data = i_mem_data;
     end
     
     /* Stop request */
@@ -232,6 +244,7 @@ always @(posedge i_mem_ack) begin
     or_stall = 1'b0;
     or_mem_data = 32'b0;
     or_mem_addr = 32'b0;
+    req_complete = 1;
 end
 
 endmodule
