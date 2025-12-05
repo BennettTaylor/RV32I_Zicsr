@@ -10,6 +10,8 @@ module decode(
     input wire [`XADDR-1:0] i_rd_addr, // register address for  
     input wire [`XLEN-1:0] i_rd_data, // Data to be writen to register file
     input wire i_wr_en, // Write enable for the register file
+    input wire i_stall, 
+    input wire i_flush,
 
     /* Decode stage output registers */
     output reg [`OPLEN:0] or_opcode, // Opcode
@@ -22,7 +24,9 @@ module decode(
     output reg [6:0] or_funct7, // Funct7
     output reg [2:0] or_funct3, // Funct3
     output reg [`ALUOPS-1:0] or_alu_op, // The ALU operation specified
-    output reg [`XLEN-1:0] or_pc // Current program counter
+    output reg [`XLEN-1:0] or_pc, // Current program counter
+    output reg or_write_enable, //Write enable to be passed along
+    output reg or_stall 
 );
 
 
@@ -44,6 +48,9 @@ wire [`XLEN-1:0] rs2_data;
 reg [`XLEN-1:0] imm;
 reg [`ALUOPS-1:0] alu_op;
 
+/* Assign Write Enable*/
+reg write_enable;
+
 /* Instantiate register file */
 register_file registers(
     .i_clk(i_clk),
@@ -60,6 +67,32 @@ register_file registers(
 /* Assign register outputs */
 always @(posedge i_clk) begin
     if (!i_rst_n) begin
+        or_opcode <= 0;
+        or_rd_addr <= 0;
+        or_rs1_addr <= 0;
+        or_rs2_addr <= 0;
+        or_rs1_data <= 0;
+        or_rs2_data <= 0;
+        or_imm <= 0;
+        or_funct7 <= 0;
+        or_funct3 <= 0;
+        or_funct7 <= 0; 
+        or_alu_op <= 0;
+        or_pc <= 0;
+    end else if (i_stall || or_stall) begin
+        or_opcode <= 0;
+        or_rd_addr <= 0;
+        or_rs1_addr <= 0;
+        or_rs2_addr <= 0;
+        or_rs1_data <= 0;
+        or_rs2_data <= 0;
+        or_imm <= 0;
+        or_funct7 <= 0;
+        or_funct3 <= 0;
+        or_funct7 <= 0; 
+        or_alu_op <= 0;
+        or_pc <= 0;
+    end else if(i_flush) begin
         or_opcode <= 0;
         or_rd_addr <= 0;
         or_rs1_addr <= 0;
@@ -93,6 +126,7 @@ always @(*) begin
     /* Reset registers */
     alu_op = 0;
     imm = 0;
+    write_enable = 1; 
     case(opcode)
         `LUI_OP, `AUIPC_OP: begin
             /* Immediate encoding for U-Type instruction */
@@ -123,6 +157,7 @@ always @(*) begin
             imm[31:12] = i_inst[31];
             imm[11:5] = i_inst[31:25];
             imm[4:0] = i_inst[11:7];
+            write_enable = 0; 
         end 
         
         `B_OP: begin
@@ -141,6 +176,7 @@ always @(*) begin
                 3'b110: alu_op = `SLTU;
                 3'b111: alu_op = `GEU;
             endcase
+            write_enable = 0; 
         end
         
         `R_OP, `I_OP: begin
