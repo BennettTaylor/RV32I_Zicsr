@@ -7,15 +7,15 @@ module cpu_tb;
     reg i_rst_n;// Active low reset
     
     wire i_inst_ack; 
-    wire i_inst_received; 
+    wire [`XLEN-1:0] i_inst_received; 
     wire i_data_ack;
-    wire i_data_received;
+    wire [`XLEN-1:0] i_data_received;
     
     /* CPU outputs */
     wire o_inst_req;
-    wire [`XADDR-1:0] o_inst_addr;
+    wire [`XLEN-1:0] o_inst_addr;
     wire o_data_req;
-    wire [`XADDR-1:0] o_data_addr;
+    wire [`XLEN-1:0] o_data_addr;
     wire [`XLEN-1:0] o_data; // Data to be written
     wire [2:0] o_funct3;
     wire o_readwrite_signal;
@@ -40,6 +40,7 @@ module cpu_tb;
     );
     
     program_memory #("nop.mem") program_memory_test(
+        .i_rst_n(i_rst_n),
         .i_pc(o_inst_addr), // Instruction address
         .i_instruction_request(o_inst_req), // Instruction request signal
         
@@ -49,6 +50,7 @@ module cpu_tb;
     
     data_memory #("zero.mem") data_memory_test(
         /* Data memory inputs */
+        .i_rst_n(i_rst_n),
         .i_mem_req(o_data_req), // Memory request signal
         .i_mem_addr(o_data_addr), // Memory address requested for read/write
         .i_mem_data(o_data), // Data to be written to memory

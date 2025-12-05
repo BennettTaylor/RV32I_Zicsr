@@ -6,6 +6,7 @@ module program_memory #(
 ) (
     input wire [31:0] i_pc, // Instruction address
     input wire i_instruction_request, // Instruction request signal
+    input wire i_rst_n, 
     
     output reg [31:0] or_instruction, // Instruction data
     output reg or_ack // Acknoledgement signal
@@ -26,12 +27,17 @@ end
 
 /* Answer request */
 always @(*) begin
+        if(!i_rst_n) begin
+            or_instruction = 32'b0;
+            or_ack = 0; 
+        end
         if (i_instruction_request) begin 
-            or_instruction <= program_instructions[i_pc[`NUMINST-1:0]]; 
+            or_instruction <= program_instructions[i_pc[`INSTBITS-1:0]]; 
             or_ack <= 1; 
         end else begin
             or_ack <= 0;
         end
+        
 end
 
 endmodule

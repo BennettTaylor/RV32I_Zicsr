@@ -10,9 +10,10 @@
 `define OPS 10 // Number of unique opcodes
 `define ALUOPS 4 // Number of bits needed to identify ALU operations 
 `define MEMADDR 25 // Number of bits needed to access 128MB of memory word-wise
-`define NUMINST 20 
-`define MEMSIZE 5 // Number of bits to represent the number of words accessable in memory
-`define NUMINST 5  // Number of bits to represent the number of instructions accessable in memory
+`define MEMSIZE 32 // Number of accessable in memory
+`define MEMBITS 5
+`define NUMINST 32  // Number of instructions accessable in memory
+`define INSTBITS 5
 
 /* Opcodes */
 `define R_OP 7'b0110011 // R Type Opcode

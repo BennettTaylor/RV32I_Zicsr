@@ -5,7 +5,7 @@ module memory(
     /* Memory stage inputs */
     input wire i_clk, // CPU clock
     input wire i_rst_n, // Active low reset
-    input wire [`OPLEN:0] i_opcode, // Opcode
+    input wire [`OPLEN-1:0] i_opcode, // Opcode
     input wire [2:0] i_funct3,
     input wire [`XLEN-1:0] i_rs2, // Data to be written
     input wire [`XADDR-1:0] i_rd_addr, // Destination register address
@@ -29,7 +29,8 @@ module memory(
     output reg [2:0] or_funct3, // Indicates what kind of memory operation is being performed
     output reg or_read_write, // Indicates read (0) or write (1) operation
     output reg or_flush, // Flush signal to external stages
-    output reg or_stall // Stall signal to external stages
+    output reg or_stall, // Stall signal to external stages
+    output reg [2:0] or_funct_3_wb //
 );
 
 reg [`XLEN-1:0] rd_data;
@@ -45,9 +46,13 @@ always @(posedge i_clk or negedge i_rst_n) begin
         or_rd_data <= 0;
         or_opcode <= 0;
         or_mem_req <= 0;
+        or_mem_data <=0;
+        or_read_write <= 0;
+        or_funct3 <=0; 
         or_mem_addr <= 0;
         or_flush <= 0;
         or_stall <= 0;
+        or_funct_3_wb <=0; 
     end else if (i_flush || or_flush) begin
         /* Make current instruction a NOP instruction (ADDI x0, x0, 0) */
         or_pc <= i_pc;
@@ -59,6 +64,7 @@ always @(posedge i_clk or negedge i_rst_n) begin
         or_mem_addr <= 0;
         or_flush <= 0;
         or_stall <= 0;
+        or_funct_3_wb <=0;
     end else if (i_stall || or_stall) begin
         /* Hold current state */
         or_pc <= or_pc;
@@ -70,6 +76,7 @@ always @(posedge i_clk or negedge i_rst_n) begin
         or_mem_addr <= or_mem_addr;
         or_flush <= or_flush;
         or_stall <= or_stall;
+        or_funct_3_wb <= or_funct_3_wb;
     end else begin
         /* Pass result to write back stage */
         or_pc <= i_pc;
@@ -81,6 +88,7 @@ always @(posedge i_clk or negedge i_rst_n) begin
         or_mem_addr <= 0;
         or_flush <= 0;
         or_stall <= 0;
+        or_funct_3_wb <=i_funct3;
     end
     
     req_complete = 0;

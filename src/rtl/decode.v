@@ -14,7 +14,7 @@ module decode(
     input wire i_flush,
 
     /* Decode stage output registers */
-    output reg [`OPLEN:0] or_opcode, // Opcode
+    output reg [`OPLEN-1:0] or_opcode, // Opcode
     output reg [`XADDR-1:0] or_rd_addr, // Destination register address
     output reg [`XADDR-1:0] or_rs1_addr, // Source register 1 address for forwarding
     output reg [`XADDR-1:0] or_rs2_addr, // Source register 2 address for forwarding
@@ -26,7 +26,8 @@ module decode(
     output reg [`ALUOPS-1:0] or_alu_op, // The ALU operation specified
     output reg [`XLEN-1:0] or_pc, // Current program counter
     output reg or_write_enable, //Write enable to be passed along
-    output reg or_stall 
+    output reg or_stall, 
+    output reg or_flush
 );
 
 
@@ -79,6 +80,9 @@ always @(posedge i_clk) begin
         or_funct7 <= 0; 
         or_alu_op <= 0;
         or_pc <= 0;
+        or_flush <=0; 
+        or_stall <=0; 
+        or_write_enable <=0; 
     end else if (i_stall || or_stall) begin
         or_opcode <= 0;
         or_rd_addr <= 0;

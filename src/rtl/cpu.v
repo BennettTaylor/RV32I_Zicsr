@@ -7,14 +7,14 @@ module cpu(
     input wire i_rst_n,// Active low reset
     
     input wire i_inst_ack, 
-    input wire i_inst_received, 
+    input wire [`XLEN-1:0] i_inst_received, 
     input wire i_data_ack,
-    input wire i_data_received,
+    input wire [`XLEN-1:0] i_data_received,
     
     output wire o_inst_req,
-    output wire [`XADDR-1:0] o_inst_addr,
+    output wire [`XLEN-1:0] o_inst_addr,
     output wire o_data_req,
-    output wire [`XADDR-1:0] o_data_addr,
+    output wire [`XLEN-1:0] o_data_addr,
     output wire [`XLEN-1:0] o_data,
     output wire [2:0] o_funct3,
     output wire o_readwrite_signal
@@ -36,7 +36,7 @@ module cpu(
 
 
 //Wires for decode
-wire [`OPLEN:0] decode_or_opcode; // Opcode
+wire [`OPLEN-1:0] decode_or_opcode; // Opcode
 wire [`XADDR-1:0] decode_or_rd_addr; // Destination register address
 wire [`XADDR-1:0] decode_or_rs1_addr; // Source register 1 address for forwarding
 wire [`XADDR-1:0] decode_or_rs2_addr; // Source register 2 address for forwarding
@@ -54,13 +54,13 @@ wire decode_or_write_enable; //Write enable for execution
 
 //Wires for fetch
 wire [31:0] fetch_or_inst_data; // Output instruction for decode
-wire [31:0] fetch_or_inst_req_addr; // Address for requested instruction
+wire [`XADDR-1:0] fetch_or_inst_req_addr; // Address for requested instruction
 wire fetch_or_inst_req; // Request instruction
 wire fetch_or_stall_DDR2; //Stall off-board mem
 wire [31:0] fetch_or_pc;  // PC passed to decode
 
 // Wires for execute
-wire [`OPLEN:0] execute_or_opcode; // Opcode
+wire [`OPLEN-1:0] execute_or_opcode; // Opcode
 wire [2:0] execute_or_funct3; // Funct3
 wire [`XLEN-1:0] execute_or_rs2_data; // Data to be written
 wire [`XADDR-1:0] execute_or_rd_addr; // Destination register address
@@ -78,9 +78,10 @@ wire [`XLEN-1:0] memory_or_pc; // Current program counter
 wire [`XADDR-1:0] memory_or_rd_addr; // Register to be writen to
 wire memory_or_rd_write; // Write enable for rd
 wire [`XLEN-1:0] memory_or_rd_data; // Data to be written to rd
-wire [`OPLEN-1:0]memory_or_opcode; // Opcode
+wire [`OPLEN-1:0] memory_or_opcode; // Opcode
 wire memory_or_flush; // Flush signal to external stages
 wire memory_or_stall; // Stall signal to external stages
+wire [2:0] memory_or_funct_3_wb;
 
 
 //Wires for writeback
@@ -102,7 +103,7 @@ fetch s1( // logic for Fetch Stage
 .i_rst_n(i_rst_n), // Active low reset
 .i_stall(decode_stall), // Stall signal
 .i_flush(decode_flush), // Flush signal
-.i_jump(execute_pc_jump), // Jump signal
+.i_jump(execute_or_pc_jump), // Jump signal
 .i_jump_addr(execute_or_pc_next), // Address for jump
 .i_inst_data(i_inst_received), // Instruction data from memory
 .i_inst_ack(i_inst_ack), // Acknoledgement for instruction data
@@ -142,7 +143,8 @@ decode s2( // Logic for decode
 .or_alu_op(decode_or_alu_op), // The ALU operation specified
 .or_pc(decode_or_pc), // Current program counter
 .or_write_enable(decode_or_write_enable), //Write enable to be passed along
-.or_stall(decode_stall) 
+.or_stall(decode_stall),
+.or_flush(decode_flush) 
 
 
 );
@@ -155,7 +157,7 @@ execute s3(
 .i_rd_addr(decode_or_rd_addr), // Destination register address
 .i_rd_wr_en(decode_or_write_enable),
 .i_rd_mem(memory_or_rd_data), // RD value for instruction currently in the memory stage
-.i_rd_addr_mem(memory_or_addr), // RD address for instruction currently in the memory stage
+.i_rd_addr_mem(memory_or_rd_addr), // RD address for instruction currently in the memory stage
 .i_rd_mem_wr_en(memory_or_rd_write),  // Register file write enable for the instruction currently in the memory stage 
 .i_rd_wb(writeback_or_rd_data), // RD value for instruction currently in the write back stage
 .i_rd_addr_wb(writeback_or_rd_addr), // RD address for instruction currently in the write back stage
@@ -194,7 +196,7 @@ memory s4 (//Logic For memory
 .i_opcode(execute_or_opcode), // Opcode
 .i_funct3(execute_or_funct3),
 .i_rs2(execute_or_rs2_data), // Data to be written
-.i_rd_addr(execute_or_rd_add),
+.i_rd_addr(execute_or_rd_addr),
 .i_rd_write(execute_or_rd_wr_en),
 .i_alu_result(execute_or_alu_result),
 .i_pc(execute_or_pc), 
@@ -215,26 +217,27 @@ memory s4 (//Logic For memory
 .or_funct3(o_funct3), // Indicates what kind of memory operation is being performed
 .or_read_write(o_readwrite_signal), // Indicates read (0) or write (1) operation
 .or_flush(memory_or_flush), // Flush signal to external stages
-.or_stall(memory_or_stall) // Stall signal to external stages
+.or_stall(memory_or_stall), // Stall signal to external stages
+.or_funct_3_wb(memory_or_funct_3_wb)
 );
 
 write_back s5(// Logic for Write Back)
 // Write Back Inputs 
 .i_clk(i_clk), // CPU clock
 .i_rst_n(i_rst_n), // Active low reset
-.i_rd_addr(execute_or_rd_addr), // Register to be writen to
-.i_rd_write(execute_or_rd_wr_en), // Write enable for rd
-.i_rd_data(execute_or_rd_addr), // Data to be written to rd
-.i_pc(execute_or_pc), // Current program counter
-.i_opcode(execute_or_opcode), // Opcode
-.i_funct3(execute_or_funct3), // Funct3 (for CSR instructions)
+.i_rd_addr(memory_or_rd_addr), // Register to be writen to
+.i_rd_write(memory_or_rd_write), // Write enable for rd
+.i_rd_data(memory_or_rd_data), // Data to be written to rd
+.i_pc(memory_or_pc), // Current program counter
+.i_opcode(memory_or_opcode), // Opcode
+.i_funct3(memory_or_funct_3_wb), // Funct3 (for CSR instructions)
 
 //Write Back Outputs
-.or_rd_addr(writeback_ir_rd_addr), // Register to be writen to
-.or_rd_write(writeback_ir_rd_write), // Write enable for rd
-.or_rd_data(writeback_ir_rd_data), // Data to be written to rd
+.or_rd_addr(writeback_or_rd_addr), // Register to be writen to
+.or_rd_write(writeback_or_rd_write), // Write enable for rd
+.or_rd_data(writeback_or_rd_data), // Data to be written to rd
 .or_stall(writeback_or_stall),
 .or_flush(writeback_or_flush)
 );
 
-endmodule;
+endmodule

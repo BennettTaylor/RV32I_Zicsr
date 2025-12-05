@@ -8,12 +8,12 @@ module fetch(
     input wire i_stall, // Stall signal
     input wire i_flush, // Flush signal
     input wire i_jump, // Jump signal
-    input wire [31:0] i_jump_addr, // Address for jump
+    input wire [`XLEN-1:0] i_jump_addr, // Address for jump
     input wire [31:0] i_inst_data, // Instruction data from memory
     input wire i_inst_ack, // Acknoledgement for instruction data
     
     output reg [31:0] or_inst_data, // Output instruction for decode
-    output reg [31:0] or_inst_req_addr, // Address for requested instruction
+    output reg [`XLEN-1:0] or_inst_req_addr, // Address for requested instruction
     output reg or_inst_req, // Request instruction
     output reg or_stall_DDR2, //Stall off-board mem
     output reg[31:0] or_pc  // PC passed to decode

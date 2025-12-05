@@ -5,7 +5,7 @@ module execute(
     /* Execute stage inputs */
     input wire i_clk, // CPU clock
     input wire i_rst_n, // Active low reset
-    input wire [`OPLEN:0] i_opcode, // Opcode
+    input wire [`OPLEN-1:0] i_opcode, // Opcode
     input wire [`XADDR-1:0] i_rd_addr, // Destination register address
     input wire i_rd_wr_en,
     input wire [`XLEN-1:0] i_rd_mem, // RD value for instruction currently in the memory stage
@@ -27,7 +27,7 @@ module execute(
     input wire i_stall, // Stall signals from external stages
     
     /* Execute stage outputs */
-    output reg [`OPLEN:0] or_opcode, // Opcode
+    output reg [`OPLEN-1:0] or_opcode, // Opcode
     output reg [2:0] or_funct3, // Funct3
     output reg [`XLEN-1:0] or_rs2_data, // Data to be written
     output reg [`XADDR-1:0] or_rd_addr, // Destination register address
