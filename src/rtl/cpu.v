@@ -11,12 +11,13 @@ module cpu(
     input wire i_data_ack,
     input wire i_data_received,
     
-    output reg o_inst_req,
-    output reg [`XADDR:0] o_inst_addr,
-    output reg o_data_req,
-    output reg [`XADDR:0] o_data_addr,
-    output reg [2:0] o_size_delineator,
-    output reg o_readwrite_signal
+    output wire o_inst_req,
+    output wire [`XADDR-1:0] o_inst_addr,
+    output wire o_data_req,
+    output wire [`XADDR-1:0] o_data_addr,
+    output wire [`XLEN-1:0] o_data,
+    output wire [2:0] o_funct3,
+    output wire o_readwrite_signal
     
     // Instruction (fetch)
     // Request signal o
@@ -78,10 +79,6 @@ wire [`XADDR-1:0] memory_or_rd_addr; // Register to be writen to
 wire memory_or_rd_write; // Write enable for rd
 wire [`XLEN-1:0] memory_or_rd_data; // Data to be written to rd
 wire [`OPLEN-1:0]memory_or_opcode; // Opcode
-wire memory_or_mem_req; // Memory request signal
-wire [`XLEN-1:0] memory_or_mem_addr; // Memory address requested for read/write
-wire [`XLEN-1:0] memory_or_mem_data; // Data to be written to memory
-wire [2:0] memory_or_funct3; // Indicates what kind of memory operation is being performed
 wire memory_or_flush; // Flush signal to external stages
 wire memory_or_stall; // Stall signal to external stages
 
@@ -107,13 +104,13 @@ fetch s1( // logic for Fetch Stage
 .i_flush(decode_flush), // Flush signal
 .i_jump(execute_pc_jump), // Jump signal
 .i_jump_addr(execute_or_pc_next), // Address for jump
-.i_inst_data(o_inst_addr), // Instruction data from memory
+.i_inst_data(i_inst_received), // Instruction data from memory
 .i_inst_ack(i_inst_ack), // Acknoledgement for instruction data
 
 //Fetch Stage Outputs//
 .or_inst_data(fetch_or_inst_data), // Output instruction for decode
-.or_inst_req_addr(fetch_or_inst_req_addr), // Address for requested instruction
-.or_inst_req(fetch_or_inst_req), // Request instruction
+.or_inst_req_addr(o_inst_addr), // Address for requested instruction
+.or_inst_req(o_inst_req), // Request instruction
 .or_stall_DDR2(fetch_or_stall_DDR2), //Stall off-board mem
 .or_pc(fetch_or_pc)  // PC passed to decode
 
@@ -192,8 +189,8 @@ execute s3(
 
 memory s4 (//Logic For memory
 /* Memory stage inputs */
-.i(i_clk),
-.i(i_rst_n),
+.i_clk(i_clk),
+.i_rst_n(i_rst_n),
 .i_opcode(execute_or_opcode), // Opcode
 .i_funct3(execute_or_funct3),
 .i_rs2(execute_or_rs2_data), // Data to be written
@@ -201,8 +198,8 @@ memory s4 (//Logic For memory
 .i_rd_write(execute_or_rd_wr_en),
 .i_alu_result(execute_or_alu_result),
 .i_pc(execute_or_pc), 
-.i_mem_awk(i_data_ack),
-.i_mem_data(o_data_addr),
+.i_mem_ack(i_data_ack),
+.i_mem_data(i_data_received),
 .i_flush(writeback_or_flush),
 .i_stall(writeback_or_stall), 
 
@@ -210,12 +207,12 @@ memory s4 (//Logic For memory
 .or_pc(memory_or_pc), // Current program counter
 .or_rd_addr(memory_or_rd_addr), // Register to be writen to
 .or_rd_write(memory_or_rd_write), // Write enable for rd
-.or_rd_data(emory_or_rd_data), // Data to be written to rd
+.or_rd_data(memory_or_rd_data), // Data to be written to rd
 .or_opcode(memory_or_opcode), // Opcode
-.or_mem_req(memory_or_mem_req), // Memory request signal
-.or_mem_addr(memory_or_mem_addr), // Memory address requested for read/write
-.or_mem_data(memory_or_mem_data), // Data to be written to memory
-.or_funct3(memory_or_funct3), // Indicates what kind of memory operation is being performed
+.or_mem_req(o_data_req), // Memory request signal
+.or_mem_addr(o_data_addr), // Memory address requested for read/write
+.or_mem_data(o_data), // Data to be written to memory
+.or_funct3(o_funct3), // Indicates what kind of memory operation is being performed
 .or_read_write(o_readwrite_signal), // Indicates read (0) or write (1) operation
 .or_flush(memory_or_flush), // Flush signal to external stages
 .or_stall(memory_or_stall) // Stall signal to external stages

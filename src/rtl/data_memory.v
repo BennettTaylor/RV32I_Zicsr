@@ -1,7 +1,9 @@
 `timescale 1ns / 1ps
 `include "header.vh"
 
-module data_memory(
+module data_memory #(
+    parameter INIT_FILE = ""
+) (
     /* Data memory inputs */
     input wire i_mem_req, // Memory request signal
     input wire [`XLEN-1:0] i_mem_addr, // Memory address requested for read/write
@@ -16,6 +18,17 @@ module data_memory(
 
 /* Data */
 reg [`MEMSIZE-1:0] data [`XLEN-1:0];
+integer i;
+
+initial begin 
+    for (i = 0; i < 2 ** `MEMSIZE; i = i + 1) begin
+        data[i] = 32'b0;
+    end
+    
+    if (INIT_FILE != "") begin
+        $readmemh(INIT_FILE, data);
+    end
+end
 
 /* Handle memory request */
 always @(*) begin

@@ -21,6 +21,7 @@ if {[string equal $argv0 "clean"] && [file exists $proj_dir]} {
 # Add sources
 add_files -fileset sources_1 [ glob ./src/rtl/*.v ]
 add_files -fileset sim_1 [ glob ./src/sim/*.v ]
+add_files -fileset sim_1 [ glob ./src/sim/*.mem ]
 add_files -scan_for_includes [ glob ./src/include/*.vh ]
 
 # Add constraints
