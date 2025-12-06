@@ -85,7 +85,8 @@ always @(posedge i_clk or negedge i_rst_n) begin
         or_rd_data <= rd_data;
         or_opcode <= i_opcode;
         or_mem_req <= 0;
-        or_mem_addr <= 0;
+        or_mem_addr <=or_mem_addr;
+        or_mem_data <=or_mem_data; 
         or_flush <= 0;
         or_stall <= 0;
         or_funct_3_wb <=i_funct3;
@@ -97,6 +98,7 @@ end
 /* Generate memory request */
 always @(*) begin
     misaligned_addr = 0;
+        
     if ((i_opcode == `L_OP) && !req_complete) begin
         /* Handle load operation */
         case (i_funct3)
@@ -145,54 +147,6 @@ always @(*) begin
         endcase
     end else if ((i_opcode == `S_OP) && !req_complete) begin
         /* Handle store operation */
-        case (i_funct3)
-            /* Load byte */
-            3'b000: begin
-                or_mem_addr = i_alu_result;
-                or_mem_data = i_rs2;
-                or_read_write = 1;
-                or_mem_req = 1;
-                or_stall = 1'b1;
-                or_funct3 = i_funct3;
-            end
-            
-            /* Load half word */
-            3'b001: begin
-                if (i_alu_result[0] == 1) begin
-                    or_read_write = 1;
-                    or_mem_req = 0;
-                    or_stall = 1'b1;
-                    or_funct3 = i_funct3;
-                    misaligned_addr = 1;
-                end else begin
-                    or_mem_addr = i_alu_result;
-                    or_mem_data = i_rs2;
-                    or_read_write = 1;
-                    or_mem_req = 1;
-                    or_stall = 1'b1;
-                    or_funct3 = i_funct3;
-                end
-            end
-            
-            /* Load word */
-            3'b010: begin
-                if (i_alu_result[1:0] != 2'b00) begin
-                    or_read_write = 1;
-                    or_mem_req = 0;
-                    or_stall = 1'b1;
-                    or_funct3 = i_funct3;
-                    misaligned_addr = 1;
-                end else begin
-                    or_mem_addr = i_alu_result;
-                    or_mem_data = i_rs2;
-                    or_read_write = 1;
-                    or_mem_req = 1;
-                    or_stall = 1'b1;
-                    or_funct3 = i_funct3;
-                end
-            end
-        endcase
-        
         /* Construct data to be stored to memory */
         case (i_funct3)
             /* Store byte */
@@ -234,6 +188,53 @@ always @(*) begin
                 or_mem_data = i_rs2;
             end
         endcase
+        case (i_funct3)
+            /* Store byte */
+            3'b000: begin
+                or_mem_addr = i_alu_result;
+                or_mem_data = i_rs2;
+                or_read_write = 1;
+                or_mem_req = 1;
+                or_stall = 1'b1;
+                or_funct3 = i_funct3;
+            end
+            
+            /* Store half word */
+            3'b001: begin
+                if (i_alu_result[0] == 1) begin
+                    or_read_write = 1;
+                    or_mem_req = 0;
+                    or_stall = 1'b1;
+                    or_funct3 = i_funct3;
+                    misaligned_addr = 1;
+                end else begin
+                    or_mem_addr = i_alu_result;
+                    or_mem_data = i_rs2;
+                    or_read_write = 1;
+                    or_mem_req = 1;
+                    or_stall = 1'b1;
+                    or_funct3 = i_funct3;
+                end
+            end
+            
+            /* Store word */
+            3'b010: begin
+                if (i_alu_result[1:0] != 2'b00) begin
+                    or_read_write = 1;
+                    or_mem_req = 0;
+                    or_stall = 1'b1;
+                    or_funct3 = i_funct3;
+                    misaligned_addr = 1;
+                end else begin
+                    or_mem_addr = i_alu_result;
+                    or_mem_data = i_rs2;
+                    or_read_write = 1;
+                    or_mem_req = 1;
+                    or_stall = 1'b1;
+                    or_funct3 = i_funct3;
+                end
+            end
+        endcase
     end else begin
         /* Not a memory operation */
         rd_data = i_alu_result;
@@ -250,8 +251,6 @@ always @(posedge i_mem_ack) begin
     /* Stop request */
     or_mem_req = 1'b0;
     or_stall = 1'b0;
-    or_mem_data = 32'b0;
-    or_mem_addr = 32'b0;
     req_complete = 1;
 end
 

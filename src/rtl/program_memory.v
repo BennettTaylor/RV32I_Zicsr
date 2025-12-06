@@ -32,7 +32,7 @@ always @(*) begin
             or_ack = 0; 
         end
         if (i_instruction_request) begin 
-            or_instruction <= program_instructions[i_pc[`INSTBITS-1:0]]; 
+            or_instruction <= program_instructions[i_pc[`INSTBITS+1:2]]; 
             or_ack <= 1; 
         end else begin
             or_ack <= 0;

@@ -19,7 +19,7 @@ module write_back(
     output reg or_flush
 );
 
-always @(*) begin
+always @(posedge i_clk) begin
     or_rd_addr = i_rd_addr;
     or_rd_write = i_rd_write;
     or_rd_data = i_rd_data;

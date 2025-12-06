@@ -54,8 +54,8 @@ wire decode_or_write_enable; //Write enable for execution
 
 //Wires for fetch
 wire [31:0] fetch_or_inst_data; // Output instruction for decode
-wire [`XADDR-1:0] fetch_or_inst_req_addr; // Address for requested instruction
-wire fetch_or_inst_req; // Request instruction
+//wire [`XADDR-1:0] fetch_or_inst_req_addr; // Address for requested instruction
+//wire fetch_or_inst_req; // Request instruction
 wire fetch_or_stall_DDR2; //Stall off-board mem
 wire [31:0] fetch_or_pc;  // PC passed to decode
 
@@ -156,12 +156,12 @@ execute s3(
 .i_opcode(decode_or_opcode), // Opcode
 .i_rd_addr(decode_or_rd_addr), // Destination register address
 .i_rd_wr_en(decode_or_write_enable),
-.i_rd_mem(memory_or_rd_data), // RD value for instruction currently in the memory stage
-.i_rd_addr_mem(memory_or_rd_addr), // RD address for instruction currently in the memory stage
-.i_rd_mem_wr_en(memory_or_rd_write),  // Register file write enable for the instruction currently in the memory stage 
-.i_rd_wb(writeback_or_rd_data), // RD value for instruction currently in the write back stage
-.i_rd_addr_wb(writeback_or_rd_addr), // RD address for instruction currently in the write back stage
-.i_rd_wb_wr_en(writeback_or_rd_write),  // Register file write enable for the instruction currently in the write back stage
+.i_rd_mem(execute_or_alu_result), // RD value for instruction currently in the memory stage
+.i_rd_addr_mem(execute_or_rd_addr), // RD address for instruction currently in the memory stage
+.i_rd_mem_wr_en(execute_or_rd_wr_en),  // Register file write enable for the instruction currently in the memory stage 
+.i_rd_wb(memory_or_rd_data), // RD value for instruction currently in the write back stage
+.i_rd_addr_wb(memory_or_rd_addr), // RD address for instruction currently in the write back stage
+.i_rd_wb_wr_en(memory_or_rd_write),  // Register file write enable for the instruction currently in the write back stage
 .i_rs1_addr(decode_or_rs1_addr), // Source register 1 address for forwarding
 .i_rs2_addr(decode_or_rs2_addr), // Source register 2 address for forwarding
 .i_rs1_data(decode_or_rs1_data), // Source register 1 value

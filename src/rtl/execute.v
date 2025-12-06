@@ -134,7 +134,7 @@ always @(posedge i_clk) begin
     else begin
         or_opcode <= i_opcode;
         or_funct3 <= i_funct3;
-        or_rs2_data <= i_rs2_data;
+        or_rs2_data <= rs2_data;
         or_rd_addr <= i_rd_addr;
         or_rd_wr_en <= i_rd_wr_en;
         or_alu_result <= alu_result;

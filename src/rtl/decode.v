@@ -82,7 +82,7 @@ always @(posedge i_clk) begin
         or_pc <= 0;
         or_flush <=0; 
         or_stall <=0; 
-        or_write_enable <=0; 
+        or_write_enable <= 0; 
     end else if (i_stall || or_stall) begin
         or_opcode <= 0;
         or_rd_addr <= 0;
@@ -96,6 +96,7 @@ always @(posedge i_clk) begin
         or_funct7 <= 0; 
         or_alu_op <= 0;
         or_pc <= 0;
+        or_write_enable <= write_enable;
     end else if(i_flush) begin
         or_opcode <= 0;
         or_rd_addr <= 0;
@@ -109,6 +110,7 @@ always @(posedge i_clk) begin
         or_funct7 <= 0; 
         or_alu_op <= 0;
         or_pc <= 0;
+        or_write_enable <= write_enable;
     end else begin
         or_opcode <= opcode;
         or_rd_addr <= i_inst[11:7];
@@ -122,6 +124,7 @@ always @(posedge i_clk) begin
         or_funct7 <= funct7; 
         or_alu_op <= alu_op;
         or_pc <= i_pc;
+        or_write_enable <= write_enable;
     end
     
 end
@@ -132,13 +135,14 @@ always @(*) begin
     alu_op = 0;
     imm = 0;
      
-    write_enable = 1; 
+    write_enable = 0; 
     case(opcode)
         `LUI_OP, `AUIPC_OP: begin
             /* Immediate encoding for U-Type instruction */
             imm[31:12] = i_inst[31:12]; 
             imm[11:0] = 12'b000000000000;
             alu_op = `ADD;
+            write_enable = 1;
         end 
         
         `JAL_OP: begin
@@ -149,6 +153,7 @@ always @(*) begin
             imm[10:1] = i_inst[30:21]; 
             imm[0] = 1'b0;
             alu_op = `ADD;
+            write_enable = 1;
         end
         
         `L_OP, `JALR_OP: begin
@@ -156,6 +161,7 @@ always @(*) begin
             imm[31:12] = i_inst[31];
             imm[11:0] = i_inst[31:20];
             alu_op = `ADD;
+            write_enable = 1;
         end
         
         `S_OP: begin
@@ -163,7 +169,8 @@ always @(*) begin
             imm[31:12] = i_inst[31];
             imm[11:5] = i_inst[31:25];
             imm[4:0] = i_inst[11:7];
-            write_enable = 0; 
+            //write_enable = 0; 
+            
         end 
         
         `B_OP: begin
@@ -182,7 +189,7 @@ always @(*) begin
                 3'b110: alu_op = `SLTU;
                 3'b111: alu_op = `GEU;
             endcase
-            write_enable = 0; 
+            //write_enable = 0; 
         end
         
         `R_OP, `I_OP: begin
@@ -210,6 +217,7 @@ always @(*) begin
                 3'b010: alu_op = `SLT;
                 3'b011: alu_op = `SLTU;
             endcase
+            write_enable = 1;
         end
     endcase
 end

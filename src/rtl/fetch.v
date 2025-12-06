@@ -73,7 +73,6 @@ end
 always @(*) begin
     stall = 0;
     or_inst_req = 0;
-    or_inst_req_addr = 32'b0;
     or_stall_DDR2 = 0;
     if (i_inst_ack && !req_complete) begin
         // If instruction data is ready and hasn't been handled, update system
