@@ -65,6 +65,99 @@ register_file registers(
     .or_rs2_data(rs2_data)
 );
 
+/* Calculate needed values */
+always @(*) begin
+    /* Reset registers */
+    alu_op = 0;
+    imm = 0;
+     
+    write_enable = 0; 
+    case(opcode)
+        `LUI_OP, `AUIPC_OP: begin
+            /* Immediate encoding for U-Type instruction */
+            imm[31:12] = i_inst[31:12]; 
+            imm[11:0] = 12'b000000000000;
+            alu_op = `ADD;
+            write_enable = 1;
+        end 
+        
+        `JAL_OP: begin
+            /* Immediate encoding for JAL instruction */
+            imm[31:20] = i_inst[31];
+            imm[19:12] = i_inst[19:12];
+            imm[11] = i_inst[20];
+            imm[10:1] = i_inst[30:21]; 
+            imm[0] = 1'b0;
+            alu_op = `ADD;
+            write_enable = 1;
+        end
+        
+        `L_OP, `JALR_OP: begin
+        // Case Statement for I-Type
+            imm[31:12] = i_inst[31];
+            imm[11:0] = i_inst[31:20];
+            alu_op = `ADD;
+            write_enable = 1;
+        end
+        
+        `S_OP: begin
+        // Case Statement for S-Type
+            imm[31:12] = i_inst[31];
+            imm[11:5] = i_inst[31:25];
+            imm[4:0] = i_inst[11:7];
+            //write_enable = 0; 
+            alu_op = `ADD; 
+            
+        end 
+        
+        `B_OP: begin
+        // Case Statement for B-Type
+            imm[31:12] = i_inst[31];
+            imm[11] = i_inst[7]; 
+            imm[10:5] = i_inst[30:25]; 
+            imm[4:1] = i_inst[11:8]; 
+            imm[0] = 1'b0;
+            
+            case(funct3)
+                3'b000: alu_op = `EQ;
+                3'b001: alu_op = `NEQ;
+                3'b100: alu_op = `SLT;
+                3'b101: alu_op = `GE;
+                3'b110: alu_op = `SLTU;
+                3'b111: alu_op = `GEU;
+            endcase
+            //write_enable = 0; 
+        end
+        
+        `R_OP, `I_OP: begin
+            imm[31:12] = i_inst[31];
+            imm[11:0] = i_inst[31:20];
+            case(funct3)
+                3'b000: begin
+                    if ((funct7 == 7'b0010100) && (opcode != `I_OP)) begin
+                        alu_op = `SUB;
+                    end else begin
+                        alu_op = `ADD;
+                    end
+                end
+                3'b100: alu_op = `XOR;
+                3'b110: alu_op = `OR;
+                3'b001: alu_op = `SLL;
+                3'b101: begin
+                    if (funct7 == 7'b0010100) begin //SRA (Shift Right Arithmetic)
+                        alu_op = `SRA;
+                    end else begin
+                        alu_op = `SRL;
+                    end
+                end
+                3'b111: alu_op = `AND;
+                3'b010: alu_op = `SLT;
+                3'b011: alu_op = `SLTU;
+            endcase
+            write_enable = 1;
+        end
+    endcase
+end
 /* Assign register outputs */
 always @(posedge i_clk) begin
     if (!i_rst_n) begin
@@ -127,99 +220,6 @@ always @(posedge i_clk) begin
         or_write_enable <= write_enable;
     end
     
-end
-
-/* Calculate needed values */
-always @(*) begin
-    /* Reset registers */
-    alu_op = 0;
-    imm = 0;
-     
-    write_enable = 0; 
-    case(opcode)
-        `LUI_OP, `AUIPC_OP: begin
-            /* Immediate encoding for U-Type instruction */
-            imm[31:12] = i_inst[31:12]; 
-            imm[11:0] = 12'b000000000000;
-            alu_op = `ADD;
-            write_enable = 1;
-        end 
-        
-        `JAL_OP: begin
-            /* Immediate encoding for JAL instruction */
-            imm[31:20] = i_inst[31];
-            imm[19:12] = i_inst[19:12];
-            imm[11] = i_inst[20];
-            imm[10:1] = i_inst[30:21]; 
-            imm[0] = 1'b0;
-            alu_op = `ADD;
-            write_enable = 1;
-        end
-        
-        `L_OP, `JALR_OP: begin
-        // Case Statement for I-Type
-            imm[31:12] = i_inst[31];
-            imm[11:0] = i_inst[31:20];
-            alu_op = `ADD;
-            write_enable = 1;
-        end
-        
-        `S_OP: begin
-        // Case Statement for S-Type
-            imm[31:12] = i_inst[31];
-            imm[11:5] = i_inst[31:25];
-            imm[4:0] = i_inst[11:7];
-            //write_enable = 0; 
-            
-        end 
-        
-        `B_OP: begin
-        // Case Statement for B-Type
-            imm[31:12] = i_inst[31];
-            imm[11] = i_inst[7]; 
-            imm[10:5] = i_inst[30:25]; 
-            imm[4:1] = i_inst[11:8]; 
-            imm[0] = 1'b0;
-            
-            case(funct3)
-                3'b000: alu_op = `EQ;
-                3'b001: alu_op = `NEQ;
-                3'b100: alu_op = `SLT;
-                3'b101: alu_op = `GE;
-                3'b110: alu_op = `SLTU;
-                3'b111: alu_op = `GEU;
-            endcase
-            //write_enable = 0; 
-        end
-        
-        `R_OP, `I_OP: begin
-            imm[31:12] = i_inst[31];
-            imm[11:0] = i_inst[31:20];
-            case(funct3)
-                3'b000: begin
-                    if ((funct7 == 7'b0010100) && (opcode != `I_OP)) begin
-                        alu_op = `SUB;
-                    end else begin
-                        alu_op = `ADD;
-                    end
-                end
-                3'b100: alu_op = `XOR;
-                3'b110: alu_op = `OR;
-                3'b001: alu_op = `SLL;
-                3'b101: begin
-                    if (funct7 == 7'b0010100) begin //SRA (Shift Right Arithmetic)
-                        alu_op = `SRA;
-                    end else begin
-                        alu_op = `SRL;
-                    end
-                end
-                3'b111: alu_op = `AND;
-                3'b010: alu_op = `SLT;
-                3'b011: alu_op = `SLTU;
-            endcase
-            write_enable = 1;
-        end
-    endcase
 end
 
 endmodule
