@@ -122,7 +122,8 @@ always @(posedge i_clk) begin
         or_funct7 <= funct7; 
         or_alu_op <= alu_op;
         or_pc <= i_pc;
-    end 
+    end
+    
 end
 
 /* Calculate needed values */
@@ -130,6 +131,7 @@ always @(*) begin
     /* Reset registers */
     alu_op = 0;
     imm = 0;
+     
     write_enable = 1; 
     case(opcode)
         `LUI_OP, `AUIPC_OP: begin

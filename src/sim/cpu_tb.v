@@ -39,7 +39,7 @@ module cpu_tb;
     .o_readwrite_signal(o_readwrite_signal)
     );
     
-    program_memory #("nop.mem") program_memory_test(
+    program_memory #("ADD_Test.mem") program_memory_test(
         .i_rst_n(i_rst_n),
         .i_pc(o_inst_addr), // Instruction address
         .i_instruction_request(o_inst_req), // Instruction request signal
@@ -73,8 +73,8 @@ module cpu_tb;
         i_rst_n = 1;
         
         /* Stop reset signal */
-        #10
-        i_rst_n = 0;
+        //#10
+        //i_rst_n = 0;
         
         /* Begin tests */
     end
