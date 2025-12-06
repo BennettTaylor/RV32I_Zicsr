@@ -1,4 +1,4 @@
-`timescale 1ns / 1ps
+`timescale 1ns / 100ps
 `include "header.vh"
 
 module cpu(
@@ -10,6 +10,8 @@ module cpu(
     input wire [`XLEN-1:0] i_inst_received, 
     input wire i_data_ack,
     input wire [`XLEN-1:0] i_data_received,
+    output wire i_inst_req,
+    output wire [`XLEN-1:0] i_inst_addr,
     
     output wire o_inst_req,
     output wire [`XLEN-1:0] o_inst_addr,
@@ -110,8 +112,8 @@ fetch s1( // logic for Fetch Stage
 
 //Fetch Stage Outputs//
 .or_inst_data(fetch_or_inst_data), // Output instruction for decode
-.or_inst_req_addr(o_inst_addr), // Address for requested instruction
-.or_inst_req(o_inst_req), // Request instruction
+.or_inst_req_addr(i_inst_addr), // Address for requested instruction
+.or_inst_req(i_inst_req), // Request instruction
 .or_stall_DDR2(fetch_or_stall_DDR2), //Stall off-board mem
 .or_pc(fetch_or_pc)  // PC passed to decode
 

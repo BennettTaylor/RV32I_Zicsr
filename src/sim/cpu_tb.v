@@ -1,4 +1,4 @@
-`timescale 1ns / 1ps
+`timescale 1ns / 100ps
 `include "header.vh"
 
 module cpu_tb;
@@ -10,6 +10,8 @@ module cpu_tb;
     wire [`XLEN-1:0] i_inst_received; 
     wire i_data_ack;
     wire [`XLEN-1:0] i_data_received;
+    wire i_inst_req;
+    wire [`XLEN-1:0] i_inst_addr;
     
     /* CPU outputs */
     wire o_inst_req;
@@ -30,8 +32,8 @@ module cpu_tb;
     .i_data_ack(i_data_ack),
     .i_data_received(i_data_received),
     
-    .o_inst_req(o_inst_req),
-    .o_inst_addr(o_inst_addr),
+    .o_inst_req(i_inst_req),
+    .o_inst_addr(i_inst_addr),
     .o_data_req(o_data_req),
     .o_data_addr(o_data_addr),
     .o_data(o_data),
@@ -41,8 +43,8 @@ module cpu_tb;
     
     program_memory #("ADD_Test.mem") program_memory_test(
         .i_rst_n(i_rst_n),
-        .i_pc(o_inst_addr), // Instruction address
-        .i_instruction_request(o_inst_req), // Instruction request signal
+        .i_pc(i_inst_addr), // Instruction address
+        .i_instruction_request(i_inst_req), // Instruction request signal
         
         .or_instruction(i_inst_received), // Instruction data
         .or_ack(i_inst_ack) // Acknoledgement signal
