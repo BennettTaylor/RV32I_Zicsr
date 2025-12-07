@@ -22,23 +22,23 @@
 `define S_OP 7'b0100011 // S Type Opcode
 `define L_OP 7'b0000011 // Load Opcode
 `define SYSTEM_OP 7'b1110011 // ECALL, EBREAK, or CSR Opcode
-`define JALR_OP 7'b0110011 // JALR Opcode
+`define JALR_OP 7'b1100111 // JALR Opcode
 `define JAL_OP 7'b1101111 // JAL Opcode
 `define LUI_OP 7'b0110111 // LUI Opcode
 `define AUIPC_OP 7'b0010111 // AUIPC Opcode
 
 /* ALU Operations */
-`define ADD 0
-`define SUB 1
-`define SLL 2
-`define SLT 3
-`define SLTU 4
-`define XOR 5
-`define SRL 6
-`define SRA 7
-`define OR 8
-`define AND 9
-`define EQ 10
-`define NEQ 11
-`define GE 12
-`define GEU 13
+`define ADD 4'b0000
+`define SUB 4'b0001
+`define SLL 4'b0010
+`define SLT 4'b0011
+`define SLTU 4'b0100
+`define XOR 4'b0101
+`define SRL 4'b0110
+`define SRA 4'b0111
+`define OR 4'b1000
+`define AND 4'b1001
+`define EQ 4'b1010
+`define NEQ 4'b1011
+`define GE 4'b1100
+`define GEU 4'b1101

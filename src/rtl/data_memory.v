@@ -22,6 +22,8 @@ reg [`MEMSIZE-1:0] data [`XLEN-1:0];
 integer i;
 
 initial begin 
+    or_mem_ack = 0;
+    or_mem_data = 32'b0;
     for (i = 0; i < 2 ** `MEMSIZE; i = i + 1) begin
         data[i] = 32'b0;
     end
@@ -35,7 +37,6 @@ end
 always @(*) begin
     if (!i_rst_n) begin
         or_mem_ack = 0;
-        or_mem_data = 32'b0;
     end else if (i_mem_req) begin
         if (!i_read_write) begin
             /* Handle read request */
@@ -44,19 +45,23 @@ always @(*) begin
                 3'b000: begin
                     case (i_mem_addr[1:0])
                         2'b00: begin
-                            or_mem_data = {24 * data[i_mem_addr[`MEMBITS+1:2]][7], data[i_mem_addr[`MEMBITS+1:2]][7:0]}; 
+                            or_mem_data = {24 * data[i_mem_addr[`MEMBITS+1:2]][7], data[i_mem_addr[`MEMBITS+1:2]][7:0]};
+                            or_mem_ack <= 1; 
                         end
                         
                         2'b01: begin
                             or_mem_data = {24 * data[i_mem_addr[`MEMBITS+1:2]][15], data[i_mem_addr[`MEMBITS+1:2]][15:8]};
+                            or_mem_ack <= 1;
                         end
                         
                         2'b10: begin
                             or_mem_data = {24 * data[i_mem_addr[`MEMBITS+1:2]][23], data[i_mem_addr[`MEMBITS+1:2]][23:16]};
+                            or_mem_ack <= 1;
                         end
                         
                         2'b11: begin
                             or_mem_data = {24 * data[i_mem_addr[`MEMBITS+1:2]][31], data[i_mem_addr[`MEMBITS+1:2]][31:24]};
+                            or_mem_ack <= 1;
                         end
                     endcase
                 end
@@ -66,10 +71,12 @@ always @(*) begin
                     case (i_mem_addr[1])
                         1'b0: begin
                             or_mem_data = {16 * data[i_mem_addr[`MEMBITS+1:2]][15], data[i_mem_addr[`MEMBITS+1:2]][15:0]};
+                            or_mem_ack <= 1;
                         end
                         
                         1'b1: begin
                             or_mem_data = {16 * data[i_mem_addr[`MEMBITS+1:2]][31], data[i_mem_addr[`MEMBITS+1:2]][31:16]};
+                            or_mem_ack <= 1;
                         end
                     endcase
                 end
@@ -77,6 +84,7 @@ always @(*) begin
                 /* Load word */
                 3'b010: begin
                     or_mem_data = data[i_mem_addr[`MEMBITS+1:2]];
+                    or_mem_ack <= 1;
                 end
                 
                 /* Load byte unsigned */
@@ -84,18 +92,22 @@ always @(*) begin
                     case (i_mem_addr[1:0])
                         2'b00: begin
                             or_mem_data = {24 * 0, data[i_mem_addr[`MEMBITS+1:2]][7:0]}; 
+                            or_mem_ack <= 1;
                         end
                         
                         2'b01: begin
                             or_mem_data = {24 * 0, data[i_mem_addr[`MEMBITS+1:2]][15:8]};
+                            or_mem_ack <= 1;
                         end
                         
                         2'b10: begin
                             or_mem_data = {24 * 0, data[i_mem_addr[`MEMBITS+1:2]][23:16]};
+                            or_mem_ack <= 1;
                         end
                         
                         2'b11: begin
                             or_mem_data = {24 * 0, data[i_mem_addr[`MEMBITS+1:2]][31:24]};
+                            or_mem_ack <= 1;
                         end
                     endcase
                 end
@@ -105,10 +117,12 @@ always @(*) begin
                     case (i_mem_addr[1])
                         1'b0: begin
                             or_mem_data = {16 * 0, data[i_mem_addr[`MEMBITS+1:2]][15:0]};
+                            or_mem_ack <= 1;
                         end
                         
                         1'b1: begin
                             or_mem_data = {16 * 0, data[i_mem_addr[`MEMBITS+1:2]][31:16]};
+                            or_mem_ack <= 1;
                         end
                     endcase
                 end
@@ -116,47 +130,53 @@ always @(*) begin
         end else begin
             /* Handle write request */
             case (i_funct3)
-            /* Store byte */
-            3'b000: begin
-                case (i_mem_addr[1:0])
-                    2'b00: begin
-                        data[i_mem_addr[`MEMBITS+1:2]][7:0] = i_mem_data[7:0]; 
-                    end
-                    
-                    2'b01: begin
-                        data[i_mem_addr[`MEMBITS+1:2]][15:8] = i_mem_data[7:0];
-                    end
-                    
-                    2'b10: begin
-                        data[i_mem_addr[`MEMBITS+1:2]][23:16] = i_mem_data[7:0];
-                    end
-                    
-                    2'b11: begin
-                        data[i_mem_addr[`MEMBITS+1:2]][31:24] = i_mem_data[7:0];
-                    end
-                endcase
-            end
-            
-            /* Store half word */
-            3'b001: begin
-                case (i_mem_addr[1])
-                    1'b0: begin
-                        data[i_mem_addr[`MEMBITS+1:2]][15:0] = i_mem_data[15:0];
-                    end
-                    
-                    1'b1: begin
-                        data[i_mem_addr[`MEMBITS+1:2]][31:16] = i_mem_data[15:0];
-                    end
-                endcase                
-            end
-            
-            /* Store word */
-            3'b010: begin
-                data[i_mem_addr[`MEMBITS+1:2]] = i_mem_data;
-            end
-        endcase
+                /* Store byte */
+                3'b000: begin
+                    case (i_mem_addr[1:0])
+                        2'b00: begin
+                            data[i_mem_addr[`MEMBITS+1:2]][7:0] = i_mem_data[7:0]; 
+                            or_mem_ack <= 1;
+                        end
+                        
+                        2'b01: begin
+                            data[i_mem_addr[`MEMBITS+1:2]][15:8] = i_mem_data[7:0];
+                            or_mem_ack <= 1;
+                        end
+                        
+                        2'b10: begin
+                            data[i_mem_addr[`MEMBITS+1:2]][23:16] = i_mem_data[7:0];
+                            or_mem_ack <= 1;
+                        end
+                        
+                        2'b11: begin
+                            data[i_mem_addr[`MEMBITS+1:2]][31:24] = i_mem_data[7:0];
+                            or_mem_ack <= 1;
+                        end
+                    endcase
+                end
+                
+                /* Store half word */
+                3'b001: begin
+                    case (i_mem_addr[1])
+                        1'b0: begin
+                            data[i_mem_addr[`MEMBITS+1:2]][15:0] = i_mem_data[15:0];
+                            or_mem_ack <= 1;
+                        end
+                        
+                        1'b1: begin
+                            data[i_mem_addr[`MEMBITS+1:2]][31:16] = i_mem_data[15:0];
+                            or_mem_ack <= 1;
+                        end
+                    endcase                
+                end
+                
+                /* Store word */
+                3'b010: begin
+                    data[i_mem_addr[`MEMBITS+1:2]] = i_mem_data;
+                    or_mem_ack <= 1;
+                end
+            endcase
         end
-        or_mem_ack <= 1;
     end else begin
         or_mem_ack <= 0;
     end

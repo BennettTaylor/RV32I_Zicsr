@@ -35,7 +35,7 @@ always @(*) begin
     end else if ((i_rs2_addr_ex == i_rd_addr_wb) && i_rd_wb_wr_en) begin
         or_rs2 = i_rd_wb;
     end else begin
-        or_rs2 = i_rs1_ex;
+        or_rs2 = i_rs2_ex;
     end
 end
 

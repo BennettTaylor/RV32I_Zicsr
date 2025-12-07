@@ -84,7 +84,7 @@ always @(posedge i_clk or negedge i_rst_n) begin
         or_rd_write <= i_rd_write;
         or_rd_data <= rd_data;
         or_opcode <= i_opcode;
-        //or_mem_req <= 0;
+        //or_mem_req <= or_mem_req;
         or_mem_addr <=or_mem_addr;
         or_mem_data <=or_mem_data; 
         or_flush <= 0;
@@ -236,7 +236,7 @@ always @(*) begin
                 end
             end
         endcase
-    end else begin
+    end else if ((i_opcode != `S_OP) && (i_opcode != `L_OP)) begin
         /* Not a memory operation */
         rd_data = i_alu_result;
     end
