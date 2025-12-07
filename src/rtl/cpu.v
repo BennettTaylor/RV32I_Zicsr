@@ -102,7 +102,7 @@ fetch s1( // logic for Fetch Stage
 .i_clk(i_clk), // CPU clock
 .i_rst_n(i_rst_n), // Active low reset
 .i_stall(decode_stall), // Stall signal
-.i_flush(decode_flush), // Flush signal
+.i_flush(decode_flush || execute_or_flush), // Flush signal
 .i_jump(execute_or_pc_jump), // Jump signal
 .i_jump_addr(execute_or_pc_next), // Address for jump
 .i_inst_data(i_inst_received), // Instruction data from memory

@@ -67,7 +67,7 @@ register_file registers(
 
 /* Calculate needed values */
 /* Assign register outputs */
-always @(posedge i_clk) begin
+always @(posedge i_clk or posedge i_flush or negedge i_rst_n) begin
     if (!i_rst_n) begin
         or_opcode <= 0;
         or_rd_addr <= 0;

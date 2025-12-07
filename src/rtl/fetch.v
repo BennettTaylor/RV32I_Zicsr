@@ -26,7 +26,7 @@ reg req_complete; // Request completion indicator
 
 
 
-always @(posedge i_clk or negedge i_rst_n) begin
+always @(posedge i_clk or posedge i_flush or negedge i_rst_n) begin
     // Set outputs
     if (!i_rst_n) begin
         // Set outputs to 0 for reset signal

@@ -80,12 +80,12 @@ reg pc_jump;
 reg flush;
 
 /* Assign register outputs */
-always @(posedge i_clk) begin
+always @(posedge i_clk or posedge flush or negedge i_rst_n) begin
     if ((i_opcode == `B_OP) && (alu_result == 1)) begin
         pc_jump <= 1;
         flush <= 1;
         new_pc <= i_pc + i_imm;
-    end else if ((i_opcode == `AUIPC_OP) || (i_opcode == `JAL_OP) || (i_opcode == `JALR_OP)) begin
+    end else if ((i_opcode == `JAL_OP) || (i_opcode == `JALR_OP)) begin
         pc_jump <= 1;
         flush <= 1;
         new_pc <= i_pc + i_imm;
