@@ -84,7 +84,7 @@ always @(posedge i_clk or negedge i_rst_n) begin
         or_rd_write <= i_rd_write;
         or_rd_data <= rd_data;
         or_opcode <= i_opcode;
-        or_mem_req <= 0;
+        //or_mem_req <= 0;
         or_mem_addr <=or_mem_addr;
         or_mem_data <=or_mem_data; 
         or_flush <= 0;
@@ -97,6 +97,7 @@ end
 
 /* Generate memory request */
 always @(*) begin
+//always @(posedge i_clk or negedge i_rst_n) begin
     misaligned_addr = 0;
         
     if ((i_opcode == `L_OP) && !req_complete) begin
@@ -219,7 +220,7 @@ always @(*) begin
             
             /* Store word */
             3'b010: begin
-                if (i_alu_result[1:0] != 2'b00) begin
+                if (i_alu_result[1:0] != 2'b00) begin // Needs to change?
                     or_read_write = 1;
                     or_mem_req = 0;
                     or_stall = 1'b1;
