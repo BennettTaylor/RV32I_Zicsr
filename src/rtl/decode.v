@@ -66,6 +66,70 @@ register_file registers(
 );
 
 /* Calculate needed values */
+/* Assign register outputs */
+always @(posedge i_clk) begin
+    if (!i_rst_n) begin
+        or_opcode <= 0;
+        or_rd_addr <= 0;
+        or_rs1_addr <= 0;
+        or_rs2_addr <= 0;
+        or_rs1_data <= 0;
+        or_rs2_data <= 0;
+        or_imm <= 0;
+        or_funct7 <= 0;
+        or_funct3 <= 0;
+        or_funct7 <= 0; 
+        or_alu_op <= 0;
+        or_pc <= 0;
+        or_flush <=0; 
+        or_stall <=0; 
+        or_write_enable <= 0; 
+        alu_op <= 0;
+    end else if (i_stall || or_stall) begin
+        or_opcode <= 0;
+        or_rd_addr <= 0;
+        or_rs1_addr <= 0;
+        or_rs2_addr <= 0;
+        or_rs1_data <= 0;
+        or_rs2_data <= 0;
+        or_imm <= 0;
+        or_funct7 <= 0;
+        or_funct3 <= 0;
+        or_funct7 <= 0; 
+        or_alu_op <= 0;
+        or_pc <= 0;
+        or_write_enable <= write_enable;
+    end else if(i_flush) begin
+        or_opcode <= 0;
+        or_rd_addr <= 0;
+        or_rs1_addr <= 0;
+        or_rs2_addr <= 0;
+        or_rs1_data <= 0;
+        or_rs2_data <= 0;
+        or_imm <= 0;
+        or_funct7 <= 0;
+        or_funct3 <= 0;
+        or_funct7 <= 0; 
+        or_alu_op <= 0;
+        or_pc <= 0;
+        or_write_enable <= write_enable;
+    end else begin
+        or_opcode <= opcode;
+        or_rd_addr <= i_inst[11:7];
+        or_rs1_addr <= rs1_addr;
+        or_rs2_addr <= rs2_addr;
+        or_rs1_data <= rs1_data;
+        or_rs2_data <= rs2_data;
+        or_imm <= imm;
+        or_funct7 <= i_inst[31:25];
+        or_funct3 <= funct3;
+        or_funct7 <= funct7; 
+        or_alu_op <= alu_op;
+        or_pc <= i_pc;
+        or_write_enable <= write_enable;
+    end
+    
+end
 always @(*) begin
     /* Reset registers */
     imm = 0;
@@ -133,7 +197,7 @@ always @(*) begin
             imm[11:0] = i_inst[31:20];
             case(funct3)
                 3'b000: begin
-                    if ((funct7 == 7'b0010100) && (opcode != `I_OP)) begin
+                    if ((funct7 == 7'b0100000) && (opcode != `I_OP)) begin
                         alu_op = `SUB;
                     end else begin
                         alu_op = `ADD;
@@ -157,70 +221,7 @@ always @(*) begin
         end
     endcase
 end
-/* Assign register outputs */
-always @(posedge i_clk) begin
-    if (!i_rst_n) begin
-        or_opcode <= 0;
-        or_rd_addr <= 0;
-        or_rs1_addr <= 0;
-        or_rs2_addr <= 0;
-        or_rs1_data <= 0;
-        or_rs2_data <= 0;
-        or_imm <= 0;
-        or_funct7 <= 0;
-        or_funct3 <= 0;
-        or_funct7 <= 0; 
-        or_alu_op <= 0;
-        or_pc <= 0;
-        or_flush <=0; 
-        or_stall <=0; 
-        or_write_enable <= 0; 
-        alu_op <= 0;
-    end else if (i_stall || or_stall) begin
-        or_opcode <= 0;
-        or_rd_addr <= 0;
-        or_rs1_addr <= 0;
-        or_rs2_addr <= 0;
-        or_rs1_data <= 0;
-        or_rs2_data <= 0;
-        or_imm <= 0;
-        or_funct7 <= 0;
-        or_funct3 <= 0;
-        or_funct7 <= 0; 
-        or_alu_op <= 0;
-        or_pc <= 0;
-        or_write_enable <= write_enable;
-    end else if(i_flush) begin
-        or_opcode <= 0;
-        or_rd_addr <= 0;
-        or_rs1_addr <= 0;
-        or_rs2_addr <= 0;
-        or_rs1_data <= 0;
-        or_rs2_data <= 0;
-        or_imm <= 0;
-        or_funct7 <= 0;
-        or_funct3 <= 0;
-        or_funct7 <= 0; 
-        or_alu_op <= 0;
-        or_pc <= 0;
-        or_write_enable <= write_enable;
-    end else begin
-        or_opcode <= opcode;
-        or_rd_addr <= i_inst[11:7];
-        or_rs1_addr <= rs1_addr;
-        or_rs2_addr <= rs2_addr;
-        or_rs1_data <= rs1_data;
-        or_rs2_data <= rs2_data;
-        or_imm <= imm;
-        or_funct7 <= i_inst[31:25];
-        or_funct3 <= funct3;
-        or_funct7 <= funct7; 
-        or_alu_op <= alu_op;
-        or_pc <= i_pc;
-        or_write_enable <= write_enable;
-    end
-    
-end
+
 
 endmodule
 
