@@ -62,6 +62,7 @@ forward forwarding_unit(
 
 /* ALU wires */
 wire [`XLEN-1:0] alu_result;
+reg [`XLEN-1:0] alu_result;
 reg [`XLEN-1:0] data_1;
 reg [`XLEN-1:0] data_2;
 
@@ -74,7 +75,7 @@ alu ALU(
 );
 
 /* PC control wires */
-reg [`XLEN-1:0] pc_inc;
+reg [`XLEN-1:0] new_pc;
 reg pc_jump;
 reg flush;
 
@@ -83,11 +84,14 @@ always @(posedge i_clk) begin
     if ((i_opcode == `B_OP) && (alu_result == 1)) begin
         pc_jump <= 1;
         flush <= 1;
-        pc_inc <= i_imm;
+        new_pc <= i_pc + i_imm;
     end else if ((i_opcode == `AUIPC_OP) || (i_opcode == `JAL_OP) || (i_opcode == `JALR_OP)) begin
         pc_jump <= 1;
         flush <= 1;
-        pc_inc <= alu_result;
+        new_pc <= i_pc + i_imm;
+    end else begin
+        pc_jump <= 0;
+        flush <= 0;
     end
     if (!i_rst_n) begin
         or_opcode <= 0;
@@ -103,7 +107,7 @@ always @(posedge i_clk) begin
         or_stall <= 0;
         data_1 <= 0;
         data_2 <= 0;
-        pc_inc <= 0;
+        new_pc <= 0;
         pc_jump <= 0;
         flush <= 0;
     end else if (i_stall || or_stall) begin
@@ -139,7 +143,7 @@ always @(posedge i_clk) begin
         or_rd_wr_en <= i_rd_wr_en;
         or_alu_result <= alu_result;
         or_pc <= i_pc;
-        or_pc_next <= i_pc + pc_inc;
+        or_pc_next <= new_pc;
         or_pc_jump <= pc_jump;
         or_flush <= flush;
         or_stall <= 0;
@@ -151,8 +155,6 @@ end
 always @(*) begin
     data_1 = 0;
     data_2 = 0;
-    pc_inc = 4;
-    pc_jump = 0;
     case(i_opcode)
         `R_OP, `B_OP: begin
             data_1 = rs1_data;
@@ -164,9 +166,19 @@ always @(*) begin
             data_2 = i_imm;
         end
         
-        `LUI_OP, `AUIPC_OP, `JAL_OP: begin
+        `AUIPC_OP: begin
+            data_1 = i_pc;
+            data_2 = i_imm;
+        end
+        
+        `LUI_OP: begin
             data_1 = i_imm;
         end
+        
+        `JAL_OP: begin
+            data_1 = i_pc;
+        end
+        
     endcase
 end
 

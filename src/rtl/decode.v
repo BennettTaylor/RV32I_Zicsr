@@ -83,7 +83,7 @@ always @(*) begin
         
         `JAL_OP: begin
             /* Immediate encoding for JAL instruction */
-            imm[31:20] = i_inst[31];
+            imm[31:20] = {12{i_inst[31]}};
             imm[19:12] = i_inst[19:12];
             imm[11] = i_inst[20];
             imm[10:1] = i_inst[30:21]; 
@@ -94,7 +94,7 @@ always @(*) begin
         
         `L_OP, `JALR_OP: begin
         // Case Statement for I-Type
-            imm[31:12] = i_inst[31];
+            imm[31:12] = {20{i_inst[31]}};
             imm[11:0] = i_inst[31:20];
             alu_op = `ADD;
             write_enable = 1;
@@ -102,7 +102,7 @@ always @(*) begin
         
         `S_OP: begin
         // Case Statement for S-Type
-            imm[31:12] = i_inst[31];
+            imm[31:12] = {20{i_inst[31]}};
             imm[11:5] = i_inst[31:25];
             imm[4:0] = i_inst[11:7];
             //write_enable = 0; 
@@ -112,7 +112,7 @@ always @(*) begin
         
         `B_OP: begin
         // Case Statement for B-Type
-            imm[31:12] = i_inst[31];
+            imm[31:12] = {20{i_inst[31]}};
             imm[11] = i_inst[7]; 
             imm[10:5] = i_inst[30:25]; 
             imm[4:1] = i_inst[11:8]; 
@@ -130,7 +130,7 @@ always @(*) begin
         end
         
         `R_OP, `I_OP: begin
-            imm[31:12] = i_inst[31];
+            imm[31:12] = {20{i_inst[31]}};
             imm[11:0] = i_inst[31:20];
             case(funct3)
                 3'b000: begin
