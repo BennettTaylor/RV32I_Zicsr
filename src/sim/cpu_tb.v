@@ -39,7 +39,7 @@ module cpu_tb;
     .o_readwrite_signal(o_readwrite_signal)
     );
     
-    program_memory #("jump_test1.mem") program_memory_test(
+    program_memory #("test_arithmetic.mem") program_memory_test(
         .i_rst_n(i_rst_n),
         .i_pc(o_inst_addr), // Instruction address
         .i_instruction_request(o_inst_req), // Instruction request signal

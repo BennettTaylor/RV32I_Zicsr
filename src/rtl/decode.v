@@ -68,7 +68,6 @@ register_file registers(
 /* Calculate needed values */
 always @(*) begin
     /* Reset registers */
-    alu_op = 0;
     imm = 0;
      
     write_enable = 0; 
@@ -176,6 +175,7 @@ always @(posedge i_clk) begin
         or_flush <=0; 
         or_stall <=0; 
         or_write_enable <= 0; 
+        alu_op <= 0;
     end else if (i_stall || or_stall) begin
         or_opcode <= 0;
         or_rd_addr <= 0;
