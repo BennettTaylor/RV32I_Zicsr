@@ -30,7 +30,8 @@ module memory(
     output reg or_read_write, // Indicates read (0) or write (1) operation
     output reg or_flush, // Flush signal to external stages
     output reg or_stall, // Stall signal to external stages
-    output reg [2:0] or_funct_3_wb //
+    output reg [2:0] or_funct_3_wb, //
+    output wire ow_req_complete
 );
 
 reg [`XLEN-1:0] rd_data;
@@ -94,7 +95,7 @@ always @(posedge i_clk or negedge i_rst_n) begin
     
     req_complete = 0;
 end
-
+assign ow_req_complete = req_complete;
 /* Generate memory request */
 always @(*) begin
 //always @(posedge i_clk or negedge i_rst_n) begin

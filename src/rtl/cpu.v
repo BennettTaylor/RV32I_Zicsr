@@ -82,6 +82,7 @@ wire [`OPLEN-1:0] memory_or_opcode; // Opcode
 wire memory_or_flush; // Flush signal to external stages
 wire memory_or_stall; // Stall signal to external stages
 wire [2:0] memory_or_funct_3_wb;
+wire memory_ow_req_complete; 
 
 
 //Wires for writeback
@@ -144,7 +145,7 @@ decode s2( // Logic for decode
 .or_pc(decode_or_pc), // Current program counter
 .or_write_enable(decode_or_write_enable), //Write enable to be passed along
 .or_stall(decode_stall),
-.or_flush(decode_flush) 
+.or_flush(decode_flush)
 
 
 );
@@ -173,6 +174,9 @@ execute s3(
 .i_pc(decode_or_pc), // Current program counter
 .i_flush(memory_or_flush), // Flush signal from external stages
 .i_stall(memory_or_stall), // Stall signals from external stages
+.i_opcode_mem(execute_or_opcode), 
+.i_mem_data(i_data_received),
+.i_mem_req_complete(memory_ow_req_complete),
 
 //Wires For Execute Output
 .or_opcode(execute_or_opcode), // Opcode
@@ -218,7 +222,8 @@ memory s4 (//Logic For memory
 .or_read_write(o_readwrite_signal), // Indicates read (0) or write (1) operation
 .or_flush(memory_or_flush), // Flush signal to external stages
 .or_stall(memory_or_stall), // Stall signal to external stages
-.or_funct_3_wb(memory_or_funct_3_wb)
+.or_funct_3_wb(memory_or_funct_3_wb),
+.ow_req_complete(memory_ow_req_complete)
 );
 
 write_back s5(// Logic for Write Back)

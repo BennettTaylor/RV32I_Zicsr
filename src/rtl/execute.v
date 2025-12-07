@@ -25,6 +25,9 @@ module execute(
     input wire [`XLEN-1:0] i_pc, // Current program counter
     input wire i_flush, // Flush signal from external stages
     input wire i_stall, // Stall signals from external stages
+    input wire [`OPLEN-1:0] i_opcode_mem, 
+    input wire [`XLEN-1:0] i_mem_data,
+    input wire i_mem_req_complete,
     
     /* Execute stage outputs */
     output reg [`OPLEN-1:0] or_opcode, // Opcode
@@ -51,6 +54,9 @@ forward forwarding_unit(
     .i_rs1_addr_ex(i_rs1_addr),
     .i_rs2_addr_ex(i_rs2_addr),
     .i_rd_mem(i_rd_mem),
+    .i_opcode_mem(i_opcode_mem),
+    .i_mem_data(i_mem_data),
+    .i_mem_req_complete(i_mem_req_complete),
     .i_rd_addr_mem(i_rd_addr_mem),
     .i_rd_mem_wr_en(i_rd_mem_wr_en),
     .i_rd_wb(i_rd_wb),
